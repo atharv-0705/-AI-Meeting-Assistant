@@ -9,9 +9,9 @@ services:
     region: oregon # Or your preferred region (e.g., frankfurt, ohio, singapore)
     plan: free # Can be upgraded to starter/standard depending on compute needs
     envVars:
-      - key: OPENAI_API_KEY
+      - key: MISTRAL_API_KEY
         sync: false # Requires manual entry in Render dashboard
-      - key: HUGGINGFACE_API_KEY
+      - key: SARVAM_API_KEY
         sync: false
       - key: WHISPER_MODEL
         value: tiny
