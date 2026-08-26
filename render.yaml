@@ -1,0 +1,36 @@
+services:
+  # ----------------------------------------
+  # 1. FastAPI Backend (Docker)
+  # ----------------------------------------
+  - type: web
+    name: nexora-backend
+    env: docker
+    dockerfilePath: ./Dockerfile
+    region: oregon # Or your preferred region (e.g., frankfurt, ohio, singapore)
+    plan: free # Can be upgraded to starter/standard depending on compute needs
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false # Requires manual entry in Render dashboard
+      - key: HUGGINGFACE_API_KEY
+        sync: false
+      - key: WHISPER_MODEL
+        value: tiny
+      - key: PORT
+        value: "10000"
+
+  # ----------------------------------------
+  # 2. React/Vite Frontend (Static Site)
+  # ----------------------------------------
+  - type: web
+    name: nexora-frontend
+    env: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/dist
+    region: oregon
+    envVars:
+      - key: VITE_API_BASE_URL
+        # This dynamically uses the URL of the backend service created above
+        fromService:
+          type: web
+          name: nexora-backend
+          envVarKey: RENDER_EXTERNAL_URL

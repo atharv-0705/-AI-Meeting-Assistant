@@ -7,13 +7,23 @@ pyproject.toml
 pyrightconfig.json
 .python-version
 
-.agent
-.agents
-.gemini
-.gsd
-adapters
-docs
-scripts
-PROJECT_RULES.md
-GSD-STYLE.md
-model_capabilities.yaml
+# Data / Databases
+data/
+vector_db/
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Node / Frontend
+node_modules/
+frontend/dist/
+frontend/node_modules/
+.npm/
+
+# IDEs / OS
+.DS_Store
+.vscode/
+.idea/

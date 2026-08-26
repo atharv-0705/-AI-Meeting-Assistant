@@ -1,4 +1,7 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:2210/api/v1";
+let BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:2210/api/v1";
+if (BASE_URL && !BASE_URL.endsWith("/api/v1")) {
+  BASE_URL = BASE_URL.replace(/\/$/, "") + "/api/v1";
+}
 
 /**
  * Wraps fetch, unwraps the backend's { success, data, message } / { success, error } envelope,
