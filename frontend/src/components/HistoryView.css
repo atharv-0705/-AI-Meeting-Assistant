@@ -1,0 +1,102 @@
+.history-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.history-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.history-header h3 {
+  font-size: 1.2rem;
+  margin-top: 4px;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.history-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.history-card:hover {
+  border-color: var(--accent-soft);
+  box-shadow: var(--shadow-md);
+}
+
+.history-card--active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+.history-card-main {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.history-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.history-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-meta {
+  display: flex;
+  gap: var(--space-4);
+  margin-top: 6px;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.history-card-actions {
+  display: flex;
+  gap: var(--space-2);
+  padding-top: var(--space-1);
+  border-top: 1px solid var(--border);
+}
+
+.history-delete-btn:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.history-empty-card {
+  padding: var(--space-7);
+}
+
+.history-empty-icon {
+  font-size: 2.5rem;
+  margin-bottom: var(--space-3);
+}
+
+.history-empty-card h4 {
+  font-size: 1.1rem;
+  margin-bottom: var(--space-2);
+}
+
+@media (max-width: 560px) {
+  .history-meta {
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+}

@@ -1,0 +1,216 @@
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.overview-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-5);
+}
+
+.overview-card h2 {
+  font-size: 1.5rem;
+  margin-top: var(--space-1);
+  max-width: 32ch;
+}
+
+.overview-meta {
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  gap: var(--space-5);
+  margin: 0;
+}
+
+.overview-meta dt {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.65;
+  margin-bottom: 4px;
+}
+
+.overview-meta dd {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: capitalize;
+}
+
+.dashboard-section-title {
+  font-size: 1.05rem;
+  margin: 6px 0 var(--space-3);
+}
+
+/* ── Markdown rendered summary ────────────────────────────── */
+
+.summary-rendered {
+  color: var(--text-primary);
+  line-height: 1.7;
+}
+
+.summary-rendered h1,
+.summary-rendered h2,
+.summary-rendered h3,
+.summary-rendered h4,
+.summary-rendered h5,
+.summary-rendered h6 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  margin: 1.2em 0 0.5em;
+  letter-spacing: -0.01em;
+}
+
+.summary-rendered h1 { font-size: 1.4rem; }
+.summary-rendered h2 { font-size: 1.2rem; }
+.summary-rendered h3 { font-size: 1.08rem; }
+.summary-rendered h4 { font-size: 0.98rem; }
+
+.summary-rendered p {
+  color: var(--text-primary);
+  margin: 0.6em 0;
+  line-height: 1.7;
+}
+
+.summary-rendered ul,
+.summary-rendered ol {
+  margin: 0.5em 0;
+  padding-left: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.summary-rendered li {
+  line-height: 1.55;
+  font-size: 0.92rem;
+}
+
+.summary-rendered li ul,
+.summary-rendered li ol {
+  margin: 4px 0 0;
+}
+
+.summary-rendered strong {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.summary-rendered em {
+  font-style: italic;
+}
+
+.summary-rendered code {
+  font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+  font-size: 0.85em;
+  background: var(--accent-soft);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.summary-rendered pre {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-4);
+  overflow-x: auto;
+  margin: 0.8em 0;
+}
+
+.summary-rendered pre code {
+  background: none;
+  padding: 0;
+  font-size: 0.85rem;
+}
+
+.summary-rendered blockquote {
+  border-left: 3px solid var(--accent);
+  padding-left: var(--space-4);
+  margin: 0.8em 0;
+  color: var(--text-secondary);
+}
+
+.summary-rendered table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.8em 0;
+  font-size: 0.88rem;
+}
+
+.summary-rendered th,
+.summary-rendered td {
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.summary-rendered th {
+  background: var(--accent-soft);
+  font-weight: 600;
+}
+
+.summary-rendered hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1.2em 0;
+}
+
+/* ── Analysis grid ────────────────────────────────────────── */
+
+.analysis-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+}
+
+.analysis-card h3 {
+  font-size: 1.05rem;
+  margin: 4px 0 var(--space-3);
+}
+
+.analysis-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  color: var(--text-primary);
+}
+
+.analysis-list li {
+  line-height: 1.5;
+  font-size: 0.9rem;
+}
+
+.muted {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+/* ── Summary export bar ───────────────────────────────────── */
+
+.summary-export-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+
+.summary-export-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+@media (max-width: 860px) {
+  .analysis-grid {
+    grid-template-columns: 1fr;
+  }
+  .overview-meta {
+    grid-template-columns: repeat(2, auto);
+  }
+}
