@@ -8,6 +8,9 @@ RUN apt-get update && \
 
 WORKDIR /app
 
+# Install CPU-only PyTorch first to save space and prevent OOM errors during build
+RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+
 # Copy requirements and install
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
@@ -18,5 +21,5 @@ COPY . .
 # Expose port (Render sets PORT environment variable)
 EXPOSE 10000
 
-# Command to run the application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "10000"]
+# Command to run the application using Render's PORT variable
+CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-10000}
