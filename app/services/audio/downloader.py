@@ -21,7 +21,11 @@ def download_youtube_audio(url: str) -> str:
         "postprocessors": [
             {"key": "FFmpegExtractAudio", "preferredcodec": "wav", "preferredquality": "192"}
         ],
-        "js_runtimes": {"deno": {}},
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["android", "ios", "mweb", "web"]
+            }
+        },
         "quiet": True,
         "no_warnings": True,
     }
@@ -49,7 +53,15 @@ def extract_video_title(url: str) -> str | None:
     """Best-effort title lookup without downloading, used to populate meeting.title early."""
     import yt_dlp
     settings = get_settings()
-    ydl_opts = {"quiet": True, "skip_download": True, "js_runtimes": {"deno": {}}}
+    ydl_opts = {
+        "quiet": True,
+        "skip_download": True,
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["android", "ios", "mweb", "web"]
+            }
+        },
+    }
     if settings.yt_cookiefile and os.path.exists(settings.yt_cookiefile):
         ydl_opts["cookiefile"] = settings.yt_cookiefile
     try:
