@@ -1,8 +1,6 @@
 import logging
 import os
 
-import yt_dlp
-
 from app.core.config import get_settings
 from app.core.exceptions import DownloadFailedError
 
@@ -12,6 +10,7 @@ logger = logging.getLogger("meeting_assistant.audio")
 def download_youtube_audio(url: str) -> str:
     """Download a YouTube video's audio and return the path to the resulting file
     (still in its original container - conversion to WAV happens separately)."""
+    import yt_dlp
     settings = get_settings()
     os.makedirs(settings.download_dir, exist_ok=True)
 
@@ -48,6 +47,7 @@ def download_youtube_audio(url: str) -> str:
 
 def extract_video_title(url: str) -> str | None:
     """Best-effort title lookup without downloading, used to populate meeting.title early."""
+    import yt_dlp
     settings = get_settings()
     ydl_opts = {"quiet": True, "skip_download": True, "js_runtimes": {"deno": {}}}
     if settings.yt_cookiefile and os.path.exists(settings.yt_cookiefile):

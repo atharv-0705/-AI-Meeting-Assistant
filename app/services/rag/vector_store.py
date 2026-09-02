@@ -1,9 +1,7 @@
 import logging
 import os
 
-from langchain_chroma import Chroma
 from langchain_core.documents import Document
-from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from app.core.config import get_settings
@@ -14,9 +12,10 @@ logger = logging.getLogger("meeting_assistant.rag")
 _embeddings = None  # loaded once, reused across all meetings
 
 
-def get_embeddings() -> HuggingFaceEmbeddings:
+def get_embeddings() -> 'Any':
     global _embeddings
     if _embeddings is None:
+        from langchain_huggingface import HuggingFaceEmbeddings
         settings = get_settings()
         _embeddings = HuggingFaceEmbeddings(model_name=settings.embedding_model, model_kwargs={"device": "cpu"})
     return _embeddings
@@ -33,8 +32,9 @@ def _persist_dir(meeting_id: str) -> str:
     return path
 
 
-def build_vector_store(meeting_id: str, transcript: str) -> Chroma:
+def build_vector_store(meeting_id: str, transcript: str) -> 'Any':
     """Chunk the transcript, embed it, and persist a Chroma collection scoped to this meeting."""
+    from langchain_chroma import Chroma
     try:
         splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
         chunks = splitter.split_text(transcript)
@@ -53,7 +53,8 @@ def build_vector_store(meeting_id: str, transcript: str) -> Chroma:
         raise VectorStoreError("Failed to index the meeting transcript for chat.") from exc
 
 
-def load_vector_store(meeting_id: str) -> Chroma:
+def load_vector_store(meeting_id: str) -> 'Any':
+    from langchain_chroma import Chroma
     try:
         return Chroma(
             collection_name=_collection_name(meeting_id),
@@ -65,6 +66,6 @@ def load_vector_store(meeting_id: str) -> Chroma:
         raise VectorStoreError("Failed to load the meeting's indexed transcript.") from exc
 
 
-def get_retriever(vector_store: Chroma, k: int | None = None):
+def get_retriever(vector_store: 'Any', k: int | None = None):
     settings = get_settings()
     return vector_store.as_retriever(search_type="similarity", search_kwargs={"k": k or settings.rag_top_k})

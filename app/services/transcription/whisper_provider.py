@@ -1,8 +1,6 @@
 import logging
 import threading
 
-import whisper
-
 from app.core.config import get_settings
 from app.core.exceptions import TranscriptionFailedError
 
@@ -15,6 +13,7 @@ _model_lock = threading.Lock()  # whisper's model isn't guaranteed thread-safe u
 def _load_model():
     global _model
     if _model is None:
+        import whisper
         settings = get_settings()
         logger.info("Loading Whisper model: %s", settings.whisper_model)
         _model = whisper.load_model(settings.whisper_model)

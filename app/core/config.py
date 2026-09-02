@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     download_dir: str = "downloads"
     chunk_minutes: int = 10
     yt_cookiefile: str | None = "cookies.txt"
+    youtube_cookies: str | None = None
 
     # --- RAG ---
     vector_db_dir: str = "vector_db"

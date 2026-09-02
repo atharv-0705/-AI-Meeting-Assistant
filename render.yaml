@@ -13,6 +13,8 @@ services:
         sync: false # Requires manual entry in Render dashboard
       - key: SARVAM_API_KEY
         sync: false
+      - key: YOUTUBE_COOKIES
+        sync: false
       - key: WHISPER_MODEL
         value: tiny
       - key: PORT
