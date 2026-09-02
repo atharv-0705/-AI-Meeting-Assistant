@@ -2,6 +2,8 @@
 .env
 cookies.txt
 downloads
+youtube.com_cookies.txt
+
 
 pyproject.toml
 pyrightconfig.json
