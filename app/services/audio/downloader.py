@@ -42,6 +42,33 @@ def _resolve_cookiefile() -> str | None:
     return None
 
 
+def _build_extractor_args(cookie_path: str | None) -> dict[str, Any]:
+    """Build yt-dlp extractor_args. android/ios clients do not support cookies
+    so we only include them when no cookies are present."""
+    settings = get_settings()
+
+    # android and ios do NOT support cookies — yt-dlp will skip them with a warning
+    # when cookies are active. Use only web-based clients when cookies are present.
+    if cookie_path:
+        player_clients = ["mweb", "web"]
+    else:
+        player_clients = ["android", "ios", "mweb", "web"]
+
+    extractor_args: dict[str, Any] = {
+        "youtube": {
+            "player_client": player_clients
+        }
+    }
+
+    if settings.yt_pot_provider_url:
+        extractor_args["youtubepot-bgutilhttp"] = {
+            "base_url": [settings.yt_pot_provider_url]
+        }
+        logger.info("POT provider configured at %s", settings.yt_pot_provider_url)
+
+    return extractor_args
+
+
 def download_youtube_audio(url: str) -> str:
     """Download a YouTube video's audio and return the path to the resulting file
     (still in its original container - conversion to WAV happens separately)."""
@@ -49,15 +76,8 @@ def download_youtube_audio(url: str) -> str:
     settings = get_settings()
     os.makedirs(settings.download_dir, exist_ok=True)
 
-    extractor_args: dict[str, Any] = {
-        "youtube": {
-            "player_client": ["android", "ios", "mweb", "web"]
-        }
-    }
-    if settings.yt_pot_provider_url:
-        extractor_args["youtubepot-bgutilhttp"] = {
-            "base_url": [settings.yt_pot_provider_url]
-        }
+    cookie_path = _resolve_cookiefile()
+    extractor_args = _build_extractor_args(cookie_path)
 
     output_path = os.path.join(settings.download_dir, "%(title)s.%(ext)s")
     ydl_opts: dict[str, Any] = {
@@ -67,10 +87,9 @@ def download_youtube_audio(url: str) -> str:
             {"key": "FFmpegExtractAudio", "preferredcodec": "wav", "preferredquality": "192"}
         ],
         "extractor_args": extractor_args,
-        "quiet": True,
-        "no_warnings": True,
+        "quiet": False,   # Show warnings in Render logs
+        "no_warnings": False,
     }
-    cookie_path = _resolve_cookiefile()
     if cookie_path:
         ydl_opts["cookiefile"] = cookie_path
         logger.info("Using YouTube cookies from %s", cookie_path)
@@ -97,23 +116,14 @@ def download_youtube_audio(url: str) -> str:
 def extract_video_title(url: str) -> str | None:
     """Best-effort title lookup without downloading, used to populate meeting.title early."""
     import yt_dlp
-    settings = get_settings()
-    extractor_args: dict[str, Any] = {
-        "youtube": {
-            "player_client": ["android", "ios", "mweb", "web"]
-        }
-    }
-    if settings.yt_pot_provider_url:
-        extractor_args["youtubepot-bgutilhttp"] = {
-            "base_url": [settings.yt_pot_provider_url]
-        }
+    cookie_path = _resolve_cookiefile()
+    extractor_args = _build_extractor_args(cookie_path)
 
     ydl_opts: dict[str, Any] = {
         "quiet": True,
         "skip_download": True,
         "extractor_args": extractor_args,
     }
-    cookie_path = _resolve_cookiefile()
     if cookie_path:
         ydl_opts["cookiefile"] = cookie_path
     try:
