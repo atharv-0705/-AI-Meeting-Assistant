@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import Any
 
 from app.core.config import get_settings
 from app.core.exceptions import DownloadFailedError
@@ -14,18 +15,24 @@ def download_youtube_audio(url: str) -> str:
     settings = get_settings()
     os.makedirs(settings.download_dir, exist_ok=True)
 
+    extractor_args: dict[str, Any] = {
+        "youtube": {
+            "player_client": ["android", "ios", "mweb", "web"]
+        }
+    }
+    if settings.yt_pot_provider_url:
+        extractor_args["youtubepot-bgutilhttp"] = {
+            "base_url": [settings.yt_pot_provider_url]
+        }
+
     output_path = os.path.join(settings.download_dir, "%(title)s.%(ext)s")
-    ydl_opts = {
+    ydl_opts: dict[str, Any] = {
         "format": "bestaudio/best",
         "outtmpl": output_path,
         "postprocessors": [
             {"key": "FFmpegExtractAudio", "preferredcodec": "wav", "preferredquality": "192"}
         ],
-        "extractor_args": {
-            "youtube": {
-                "player_client": ["android", "ios", "mweb", "web"]
-            }
-        },
+        "extractor_args": extractor_args,
         "quiet": True,
         "no_warnings": True,
     }
@@ -33,7 +40,7 @@ def download_youtube_audio(url: str) -> str:
         ydl_opts["cookiefile"] = settings.yt_cookiefile
 
     try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:  # type: ignore[arg-type]
             info = ydl.extract_info(url, download=True)
             filename = ydl.prepare_filename(info)
             filename = filename.replace(".webm", ".wav").replace(".m4a", ".wav")
@@ -53,19 +60,25 @@ def extract_video_title(url: str) -> str | None:
     """Best-effort title lookup without downloading, used to populate meeting.title early."""
     import yt_dlp
     settings = get_settings()
-    ydl_opts = {
+    extractor_args: dict[str, Any] = {
+        "youtube": {
+            "player_client": ["android", "ios", "mweb", "web"]
+        }
+    }
+    if settings.yt_pot_provider_url:
+        extractor_args["youtubepot-bgutilhttp"] = {
+            "base_url": [settings.yt_pot_provider_url]
+        }
+
+    ydl_opts: dict[str, Any] = {
         "quiet": True,
         "skip_download": True,
-        "extractor_args": {
-            "youtube": {
-                "player_client": ["android", "ios", "mweb", "web"]
-            }
-        },
+        "extractor_args": extractor_args,
     }
     if settings.yt_cookiefile and os.path.exists(settings.yt_cookiefile):
         ydl_opts["cookiefile"] = settings.yt_cookiefile
     try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:  # type: ignore[arg-type]
             info = ydl.extract_info(url, download=False)
             return info.get("title")
     except Exception:  # noqa: BLE001

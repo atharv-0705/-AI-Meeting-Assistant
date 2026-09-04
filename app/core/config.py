@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     chunk_minutes: int = 10
     yt_cookiefile: str | None = "cookies.txt"
     youtube_cookies: str | None = None
+    yt_pot_provider_url: str | None = None
 
     # --- RAG ---
     vector_db_dir: str = "vector_db"
