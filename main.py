@@ -14,9 +14,20 @@ if settings.youtube_cookies and settings.yt_cookiefile:
     import logging
     logger = logging.getLogger("meeting_assistant")
     try:
+        cookie_data = settings.youtube_cookies.strip()
+        # Handle escaped newlines/tabs when stored in env vars
+        if "\\n" in cookie_data:
+            cookie_data = cookie_data.replace("\\n", "\n")
+        if "\\t" in cookie_data:
+            cookie_data = cookie_data.replace("\\t", "\t")
+
+        # Ensure standard Netscape header is present
+        if not cookie_data.startswith("# Netscape"):
+            cookie_data = f"# Netscape HTTP Cookie File\n{cookie_data}"
+
         with open(settings.yt_cookiefile, "w", encoding="utf-8") as f:
-            f.write(settings.youtube_cookies)
-        logger.info("Successfully wrote YouTube cookies to %s", settings.yt_cookiefile)
+            f.write(cookie_data)
+        logger.info("Successfully wrote sanitized YouTube cookies to %s", settings.yt_cookiefile)
     except Exception as e:
         logger.error("Failed to write YouTube cookies: %s", e)
 

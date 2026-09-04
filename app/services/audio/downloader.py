@@ -8,17 +8,37 @@ from app.core.exceptions import DownloadFailedError
 logger = logging.getLogger("meeting_assistant.audio")
 
 
+def _is_valid_netscape_cookies(path: str) -> bool:
+    """Verify that the cookie file contains valid tab-separated lines or Netscape header."""
+    try:
+        with open(path, "r", encoding="utf-8", errors="ignore") as f:
+            content = f.read(4096)
+            if not content.strip():
+                return False
+            # Check for standard Netscape header or presence of tab characters
+            if "Netscape" in content or "\t" in content:
+                return True
+    except Exception:
+        return False
+    return False
+
+
 def _resolve_cookiefile() -> str | None:
     """Find valid cookie file from config, Render Secret Files (/etc/secrets/), or root."""
     settings = get_settings()
     candidates = [
-        settings.yt_cookiefile,
         "/etc/secrets/cookies.txt",
+        settings.yt_cookiefile,
         "cookies.txt",
     ]
     for path in candidates:
         if path and os.path.isfile(path) and os.path.getsize(path) > 0:
-            return path
+            if _is_valid_netscape_cookies(path):
+                return path
+            logger.warning(
+                "Cookie file at '%s' found but is not a valid Netscape format file. Skipping it.",
+                path,
+            )
     return None
 
 

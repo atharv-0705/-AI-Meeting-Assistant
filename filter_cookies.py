@@ -10,8 +10,8 @@ def filter_youtube_cookies(input_file: str, output_file: str):
 
     filtered_lines = []
     for line in lines:
-        # Keep comments, empty lines (headers), and lines containing youtube.com
-        if line.startswith("#") or not line.strip() or "youtube.com" in line:
+        # Keep comments, empty lines (headers), and lines containing youtube.com or google.com
+        if line.startswith("#") or not line.strip() or "youtube.com" in line or "google.com" in line:
             filtered_lines.append(line)
 
     with open(output_file, "w", encoding="utf-8") as f:
