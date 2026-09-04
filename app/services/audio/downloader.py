@@ -8,6 +8,20 @@ from app.core.exceptions import DownloadFailedError
 logger = logging.getLogger("meeting_assistant.audio")
 
 
+def _resolve_cookiefile() -> str | None:
+    """Find valid cookie file from config, Render Secret Files (/etc/secrets/), or root."""
+    settings = get_settings()
+    candidates = [
+        settings.yt_cookiefile,
+        "/etc/secrets/cookies.txt",
+        "cookies.txt",
+    ]
+    for path in candidates:
+        if path and os.path.isfile(path) and os.path.getsize(path) > 0:
+            return path
+    return None
+
+
 def download_youtube_audio(url: str) -> str:
     """Download a YouTube video's audio and return the path to the resulting file
     (still in its original container - conversion to WAV happens separately)."""
@@ -36,8 +50,12 @@ def download_youtube_audio(url: str) -> str:
         "quiet": True,
         "no_warnings": True,
     }
-    if settings.yt_cookiefile and os.path.exists(settings.yt_cookiefile):
-        ydl_opts["cookiefile"] = settings.yt_cookiefile
+    cookie_path = _resolve_cookiefile()
+    if cookie_path:
+        ydl_opts["cookiefile"] = cookie_path
+        logger.info("Using YouTube cookies from %s", cookie_path)
+    else:
+        logger.warning("No YouTube cookies file found. Proceeding with POT provider only.")
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:  # type: ignore[arg-type]
@@ -75,8 +93,9 @@ def extract_video_title(url: str) -> str | None:
         "skip_download": True,
         "extractor_args": extractor_args,
     }
-    if settings.yt_cookiefile and os.path.exists(settings.yt_cookiefile):
-        ydl_opts["cookiefile"] = settings.yt_cookiefile
+    cookie_path = _resolve_cookiefile()
+    if cookie_path:
+        ydl_opts["cookiefile"] = cookie_path
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:  # type: ignore[arg-type]
             info = ydl.extract_info(url, download=False)
