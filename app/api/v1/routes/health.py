@@ -13,7 +13,7 @@ async def health_check():
         data={
             "app": settings.app_name,
             "version": settings.app_version,
-            "mistral_key_configured": bool(settings.mistral_api_key),
+            "openai_key_configured": bool(settings.openai_api_key),
             "sarvam_key_configured": bool(settings.sarvam_api_key),
         },
         message="Service is healthy.",

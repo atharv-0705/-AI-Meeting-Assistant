@@ -9,7 +9,7 @@ services:
     region: oregon # Or your preferred region (e.g., frankfurt, ohio, singapore)
     plan: free # Can be upgraded to starter/standard depending on compute needs
     envVars:
-      - key: MISTRAL_API_KEY
+      - key: OPENAI_API_KEY
         sync: false # Requires manual entry in Render dashboard
       - key: SARVAM_API_KEY
         sync: false

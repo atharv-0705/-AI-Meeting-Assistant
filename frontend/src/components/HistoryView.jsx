@@ -3,7 +3,7 @@ import { api } from "../services/api";
 import ConfirmModal from "./ConfirmModal";
 import "./HistoryView.css";
 
-export default function HistoryView({ onSelectMeeting, activeMeetingId, onToast }) {
+export default function HistoryView({ onSelectMeeting, activeMeetingId, onToast, onScrollToInput }) {
   const [meetings, setMeetings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -53,10 +53,10 @@ export default function HistoryView({ onSelectMeeting, activeMeetingId, onToast 
     }
   };
 
-  const statusClass = (status) => {
-    if (status === "ready") return "badge";
-    if (status === "failed") return "badge badge-danger";
-    return "badge";
+  const statusBorder = (status) => {
+    if (status === "ready") return "history-card--ready";
+    if (status === "failed") return "history-card--failed";
+    return "history-card--processing";
   };
 
   if (loading) {
@@ -81,7 +81,10 @@ export default function HistoryView({ onSelectMeeting, activeMeetingId, onToast 
     <div className="history-view">
       <div className="history-header">
         <div>
-          <span className="eyebrow">Archive</span>
+          <span className="section-label">
+            <span className="section-dot section-dot--ai" />
+            Archive
+          </span>
           <h3>Meeting History</h3>
         </div>
         <button className="btn btn-ghost" onClick={fetchMeetings}>
@@ -89,52 +92,63 @@ export default function HistoryView({ onSelectMeeting, activeMeetingId, onToast 
         </button>
       </div>
 
-      {meetings.length === 0 ? (
+      <div className="history-grid">
+        {meetings.map((m) => (
+          <div
+            key={m.meeting_id}
+            className={`card history-card ${statusBorder(m.status)} ${
+              m.meeting_id === activeMeetingId ? "history-card--active" : ""
+            }`}
+            onClick={() => m.status === "ready" && onSelectMeeting(m.meeting_id)}
+            role={m.status === "ready" ? "button" : undefined}
+            tabIndex={m.status === "ready" ? 0 : undefined}
+            onKeyDown={(e) => e.key === "Enter" && m.status === "ready" && onSelectMeeting(m.meeting_id)}
+          >
+            <div className="history-card-icon">🎙</div>
+            <h4 className="history-title">{m.title || "Untitled meeting"}</h4>
+            <div className="history-meta">
+              <span className="history-date">{formatDate(m.created_at)}</span>
+              <span className="history-id">{m.meeting_id.slice(0, 8)}…</span>
+            </div>
+            <div className="history-card-footer">
+              <span className={`history-status history-status--${m.status === "ready" ? "ready" : m.status === "failed" ? "failed" : "processing"}`}>
+                <span className="history-status-dot" />
+                {m.status}
+              </span>
+              <button
+                className="history-delete-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDeleteTarget(m);
+                }}
+                aria-label={`Delete ${m.title || "Untitled meeting"}`}
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        ))}
+
+        {/* + New meeting card */}
+        <div
+          className="card history-card history-card--new"
+          onClick={() => onScrollToInput?.()}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === "Enter" && onScrollToInput?.()}
+        >
+          <div className="history-new-icon">+</div>
+          <span className="history-new-label">New meeting</span>
+        </div>
+      </div>
+
+      {meetings.length === 0 && (
         <div className="card history-empty-card">
           <div className="empty-state">
             <div className="history-empty-icon">📁</div>
             <h4>No meetings yet</h4>
             <p>Process your first meeting to see it here.</p>
           </div>
-        </div>
-      ) : (
-        <div className="history-list">
-          {meetings.map((m) => (
-            <div
-              key={m.meeting_id}
-              className={`card history-card ${m.meeting_id === activeMeetingId ? "history-card--active" : ""}`}
-            >
-              <div className="history-card-main">
-                <div className="history-card-info">
-                  <h4 className="history-title">{m.title || "Untitled meeting"}</h4>
-                  <div className="history-meta">
-                    <span className="history-date">{formatDate(m.created_at)}</span>
-                    <span className="history-id">ID: {m.meeting_id.slice(0, 8)}…</span>
-                  </div>
-                </div>
-                <span className={statusClass(m.status)}>
-                  <span className="badge-dot" />
-                  {m.status}
-                </span>
-              </div>
-              <div className="history-card-actions">
-                <button
-                  className="btn btn-primary"
-                  onClick={() => onSelectMeeting(m.meeting_id)}
-                  disabled={m.status !== "ready"}
-                  title={m.status !== "ready" ? "This meeting is not ready yet" : "Open this meeting"}
-                >
-                  Open
-                </button>
-                <button
-                  className="btn btn-secondary history-delete-btn"
-                  onClick={() => setDeleteTarget(m)}
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
         </div>
       )}
 

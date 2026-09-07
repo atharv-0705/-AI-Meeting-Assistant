@@ -1,79 +1,66 @@
 /* ============================================================
-   NEXORA design tokens
-   Dark: premium teal-accented productivity dashboard
-   Light: soft lavender/pastel system, distinct card surfaces by content type
+   NEXORA design tokens — dark-only, dual-accent system
+   Voice (human input):  #1DB975  → capture, recording, early pipeline
+   AI    (machine out):  #7C5CFC  → transcripts, RAG, late pipeline
    ============================================================ */
 
-:root,
-[data-theme="light"] {
-  --bg: #f8f9fc;
-  --bg-gradient: linear-gradient(160deg, #f8f9fc 0%, #f1eefb 55%, #ede7f6 100%);
+:root {
+  /* ── Backgrounds ─────────────────────────────────────────── */
+  --bg-base: #0A0F0D;
+  --bg-gradient: radial-gradient(
+      1200px 600px at 15% -10%,
+      rgba(29, 185, 117, 0.10),
+      transparent 60%
+    ),
+    radial-gradient(
+      900px 500px at 100% 0%,
+      rgba(124, 92, 252, 0.07),
+      transparent 55%
+    ),
+    #0A0F0D;
 
-  --surface: #ffffff;
-  --surface-warm: #fff3cd;   /* audio / recording related content */
-  --surface-cool: #ede7f6;   /* uploads / input / RAG-related content */
-  --surface-contrast: #1a1a1a; /* secondary / high-contrast modules */
-  --surface-contrast-fg: #f8f9fc;
+  /* ── Surfaces ────────────────────────────────────────────── */
+  --surface: #121815;
+  --surface-glass: rgba(18, 24, 21, 0.6);
 
-  --border: rgba(26, 26, 26, 0.08);
-  --border-strong: rgba(26, 26, 26, 0.14);
+  /* ── Accent: Voice (human input) ─────────────────────────── */
+  --signal-voice: #1DB975;
+  --signal-voice-fg: #04140f;
+  --signal-voice-soft: rgba(29, 185, 117, 0.16);
 
-  --accent: #ffc107;
-  --accent-fg: #1a1a1a;
-  --accent-soft: rgba(255, 193, 7, 0.16);
+  /* ── Accent: AI (machine output) ─────────────────────────── */
+  --signal-ai: #7C5CFC;
+  --signal-ai-fg: #f0ecff;
+  --signal-ai-soft: rgba(124, 92, 252, 0.16);
 
-  --text-primary: #1a1a1a;
-  --text-secondary: #6c757d;
+  /* ── Text ────────────────────────────────────────────────── */
+  --text-primary: #EDF2F0;
+  --text-muted: #8B978F;
 
-  --success: #1f9d63;
-  --danger: #d84343;
+  /* ── Status ──────────────────────────────────────────────── */
+  --status-error: #E5484D;
+  --status-error-soft: rgba(229, 72, 77, 0.16);
 
-  --shadow-sm: 0 1px 2px rgba(26, 26, 26, 0.05);
-  --shadow-md: 0 8px 24px rgba(26, 26, 26, 0.08);
-
-  color-scheme: light;
-}
-
-[data-theme="dark"] {
-  --bg: #0b0f0e;
-  --bg-gradient: radial-gradient(1200px 600px at 15% -10%, rgba(0, 182, 122, 0.14), transparent 60%),
-    radial-gradient(900px 500px at 100% 0%, rgba(45, 140, 200, 0.10), transparent 55%), #0b0f0e;
-
-  --surface: #121816;
-  --surface-warm: #16201c;
-  --surface-cool: #121816;
-  --surface-contrast: #ffffff;
-  --surface-contrast-fg: #0b0f0e;
-
+  /* ── Borders ─────────────────────────────────────────────── */
   --border: rgba(255, 255, 255, 0.08);
   --border-strong: rgba(255, 255, 255, 0.14);
 
-  --accent: #00b67a;
-  --accent-fg: #04140f;
-  --accent-soft: rgba(0, 182, 122, 0.16);
-
-  --text-primary: #ffffff;
-  --text-secondary: #8a9a95;
-
-  --success: #00b67a;
-  --danger: #ff6b6b;
-
+  /* ── Shadows ─────────────────────────────────────────────── */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.4);
 
-  color-scheme: dark;
-}
-
-/* Shared, theme-independent tokens */
-:root {
+  /* ── Typography ──────────────────────────────────────────── */
   --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
-  --font-body: "Inter", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", "Consolas", monospace;
 
+  /* ── Radii ───────────────────────────────────────────────── */
   --radius-sm: 10px;
   --radius-md: 16px;
   --radius-lg: 24px;
   --radius-pill: 999px;
 
+  /* ── Spacing scale ───────────────────────────────────────── */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -82,6 +69,9 @@
   --space-6: 32px;
   --space-7: 48px;
 
+  /* ── Transitions ─────────────────────────────────────────── */
   --transition-fast: 150ms ease;
   --transition-base: 220ms ease;
+
+  color-scheme: dark;
 }

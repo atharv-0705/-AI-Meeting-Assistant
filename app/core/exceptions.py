@@ -74,10 +74,13 @@ class SarvamApiError(AppException):
     message = "The Sarvam AI transcription service returned an error."
 
 
-class MistralApiError(AppException):
-    code = "MISTRAL_API_ERROR"
+class OpenAIApiError(AppException):
+    code = "OPENAI_API_ERROR"
     status_code = 502
-    message = "The Mistral AI service returned an error."
+    message = "The OpenAI service returned an error."
+
+
+MistralApiError = OpenAIApiError
 
 
 class MissingApiKeyError(AppException):

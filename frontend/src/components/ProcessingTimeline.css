@@ -25,15 +25,20 @@
 
 .ring-progress {
   fill: none;
-  stroke: var(--accent);
+  stroke: var(--signal-voice);
   stroke-width: 8;
   stroke-linecap: round;
-  transition: stroke-dashoffset 600ms ease;
-  filter: drop-shadow(0 0 6px var(--accent-soft));
+  transition: stroke-dashoffset 600ms ease, stroke 400ms ease;
+  filter: drop-shadow(0 0 6px var(--signal-voice-soft));
+}
+
+.ring-progress--ai {
+  stroke: var(--signal-ai);
+  filter: drop-shadow(0 0 6px var(--signal-ai-soft));
 }
 
 .ring-progress--failed {
-  stroke: var(--danger);
+  stroke: var(--status-error);
   filter: none;
 }
 
@@ -54,7 +59,7 @@
 
 .processing-ring-label span {
   font-size: 0.68rem;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -85,7 +90,7 @@
   align-items: center;
   gap: 8px;
   font-size: 0.8rem;
-  color: var(--text-secondary);
+  color: var(--text-muted);
 }
 
 .stage-list li.active {
@@ -93,8 +98,32 @@
   font-weight: 600;
 }
 
-.stage-list li.done {
-  color: var(--accent);
+/* Voice-colored stages (done/active) */
+.stage-list li.voice.done {
+  color: var(--signal-voice);
+}
+
+.stage-list li.voice.active .stage-dot {
+  background: var(--signal-voice);
+  box-shadow: 0 0 0 4px var(--signal-voice-soft);
+}
+
+.stage-list li.voice.done .stage-dot {
+  background: var(--signal-voice);
+}
+
+/* AI-colored stages (done/active) */
+.stage-list li.ai.done {
+  color: var(--signal-ai);
+}
+
+.stage-list li.ai.active .stage-dot {
+  background: var(--signal-ai);
+  box-shadow: 0 0 0 4px var(--signal-ai-soft);
+}
+
+.stage-list li.ai.done .stage-dot {
+  background: var(--signal-ai);
 }
 
 .stage-dot {
@@ -102,15 +131,6 @@
   height: 7px;
   border-radius: 50%;
   background: var(--border-strong);
-}
-
-.stage-list li.active .stage-dot {
-  background: var(--accent);
-  box-shadow: 0 0 0 4px var(--accent-soft);
-}
-
-.stage-list li.done .stage-dot {
-  background: var(--accent);
 }
 
 @media (max-width: 620px) {

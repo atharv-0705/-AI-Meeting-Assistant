@@ -14,7 +14,10 @@ class Settings(BaseSettings):
     )
 
     # ── AI / API Keys ──────────────────────────────────────────────────────────
-    mistral_api_key: str = ""
+    openai_api_key: str = ""
+    explabs_api_key: str = ""
+    openai_base_url: str = "https://api.experientiallabs.ai/v1"
+    openai_model: str = "minimax-m2.7-free"
     sarvam_api_key: str = ""
     sarvam_stt_model: str = "saaras:v2.5"
     whisper_model: str = "small"

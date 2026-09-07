@@ -6,7 +6,10 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     # --- API keys ---
-    mistral_api_key: str | None = None
+    openai_api_key: str | None = None
+    explabs_api_key: str | None = None
+    openai_base_url: str = "https://api.experientiallabs.ai/v1"
+    openai_model: str = "minimax-m2.7-free"
     sarvam_api_key: str | None = None
     hf_token: str | None = None
 

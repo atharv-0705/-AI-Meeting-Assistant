@@ -35,7 +35,7 @@ uvicorn main:app --port 2210 --reload
 
 ## What's implemented in this increment
 
-- Full pipeline: YouTube download / file upload → WAV conversion → chunking → transcription (Whisper or Sarvam, chosen by `language`) → summary + action items + decisions + questions (Mistral) → Chroma vector index → RAG chat.
+- Full pipeline: YouTube download / file upload → WAV conversion → chunking → transcription (Whisper or Sarvam, chosen by `language`) → summary + action items + decisions + questions (OpenAI) → Chroma vector index → RAG chat.
 - Meeting lifecycle tracked via `status` (`pending → downloading → chunking → transcribing → analyzing → indexing → ready/failed`).
 - In-memory meeting store (per your call — lost on restart/`--reload`; swap `app/models/meeting_store.py` for a SQLModel-backed store later without touching any route or service code).
 - Centralized error handling — every failure mode from your spec maps to one of the `AppException` subclasses in `app/core/exceptions.py`, returned as `{"success": false, "error": {"code": ..., "message": ...}}`. No stack traces or key values ever reach the client.

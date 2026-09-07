@@ -13,11 +13,14 @@ function toLines(raw) {
     .filter(Boolean);
 }
 
-function ListCard({ eyebrow, title, raw, cardClass = "" }) {
+function ListCard({ label, dotClass, title, raw, accentClass = "" }) {
   const lines = toLines(raw);
   return (
-    <div className={`card analysis-card ${cardClass}`}>
-      <span className="eyebrow">{eyebrow}</span>
+    <div className={`card analysis-card ${accentClass}`}>
+      <span className="section-label">
+        <span className={`section-dot ${dotClass}`} />
+        {label}
+      </span>
       <h3>{title}</h3>
       {lines.length === 0 ? (
         <p className="muted">Nothing found.</p>
@@ -58,9 +61,12 @@ export default function MeetingDashboard({ meeting, summary, onToast }) {
   return (
     <div className="dashboard">
       {/* Overview card */}
-      <div className="card overview-card card--contrast">
+      <div className="card overview-card">
         <div>
-          <span className="eyebrow">Overview</span>
+          <span className="section-label">
+            <span className="section-dot section-dot--ai" />
+            Overview
+          </span>
           <h2>{summary?.title || meeting.title || "Untitled meeting"}</h2>
         </div>
         <dl className="overview-meta">
@@ -86,7 +92,10 @@ export default function MeetingDashboard({ meeting, summary, onToast }) {
 
       {/* Summary — rendered as Markdown */}
       <div>
-        <span className="eyebrow">Understand</span>
+        <span className="section-label">
+          <span className="section-dot section-dot--ai" />
+          Understand
+        </span>
         <h3 className="dashboard-section-title">Summary</h3>
         <div className="card summary-card">
           <div className="summary-rendered">
@@ -99,14 +108,34 @@ export default function MeetingDashboard({ meeting, summary, onToast }) {
 
       {/* Analysis cards */}
       <div className="analysis-grid">
-        <ListCard eyebrow="Follow-through" title="Action items" raw={summary?.action_items_raw} cardClass="card--warm" />
-        <ListCard eyebrow="Outcomes" title="Key decisions" raw={summary?.key_decisions_raw} cardClass="card--cool" />
-        <ListCard eyebrow="Open loops" title="Open questions" raw={summary?.open_questions_raw} />
+        <ListCard
+          label="Follow-through"
+          dotClass="section-dot--voice"
+          title="Action items"
+          raw={summary?.action_items_raw}
+          accentClass="analysis-card--voice"
+        />
+        <ListCard
+          label="Outcomes"
+          dotClass="section-dot--ai"
+          title="Key decisions"
+          raw={summary?.key_decisions_raw}
+          accentClass="analysis-card--ai"
+        />
+        <ListCard
+          label="Open loops"
+          dotClass=""
+          title="Open questions"
+          raw={summary?.open_questions_raw}
+        />
       </div>
 
       {/* Export controls */}
       <div className="summary-export-bar">
-        <span className="eyebrow">Export summary</span>
+        <span className="section-label">
+          <span className="section-dot" />
+          Export summary
+        </span>
         <div className="summary-export-actions">
           <button
             className="btn btn-secondary"

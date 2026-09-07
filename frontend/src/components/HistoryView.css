@@ -1,3 +1,5 @@
+/* ── History view ──────────────────────────────────────────── */
+
 .history-view {
   display: flex;
   flex-direction: column;
@@ -16,43 +18,63 @@
   margin-top: 4px;
 }
 
-.history-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
+/* ── Grid layout ───────────────────────────────────────────── */
+
+.history-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
 }
+
+/* ── Card ──────────────────────────────────────────────────── */
 
 .history-card {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  gap: var(--space-2);
+  border-left: 4px solid var(--border);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  cursor: default;
+  position: relative;
+}
+
+.history-card[role="button"] {
+  cursor: pointer;
 }
 
 .history-card:hover {
-  border-color: var(--accent-soft);
-  box-shadow: var(--shadow-md);
+  transform: scale(1.02);
+  box-shadow: 0 0 0 1px var(--border-strong), var(--shadow-md);
+}
+
+/* ── Status border accents ─────────────────────────────────── */
+
+.history-card--ready {
+  border-left-color: var(--signal-voice);
+}
+
+.history-card--processing {
+  border-left-color: var(--signal-ai);
+}
+
+.history-card--failed {
+  border-left-color: var(--status-error);
 }
 
 .history-card--active {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--accent-soft);
+  box-shadow: 0 0 0 2px var(--signal-voice-soft);
 }
 
-.history-card-main {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-3);
+/* ── Card icon ─────────────────────────────────────────────── */
+
+.history-card-icon {
+  font-size: 1.5rem;
 }
 
-.history-card-info {
-  flex: 1;
-  min-width: 0;
-}
+/* ── Card title ────────────────────────────────────────────── */
 
 .history-title {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   margin: 0;
   overflow: hidden;
@@ -60,25 +82,109 @@
   white-space: nowrap;
 }
 
+/* ── Meta: date + ID in mono ───────────────────────────────── */
+
 .history-meta {
   display: flex;
-  gap: var(--space-4);
-  margin-top: 6px;
-  font-size: 0.78rem;
-  color: var(--text-secondary);
+  gap: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-muted);
 }
 
-.history-card-actions {
+/* ── Card footer: status + delete ──────────────────────────── */
+
+.history-card-footer {
   display: flex;
-  gap: var(--space-2);
-  padding-top: var(--space-1);
-  border-top: 1px solid var(--border);
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: var(--space-2);
+}
+
+.history-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  color: var(--text-muted);
+}
+
+.history-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.history-status--ready .history-status-dot {
+  background: var(--signal-voice);
+}
+
+.history-status--processing .history-status-dot {
+  background: var(--signal-ai);
+}
+
+.history-status--failed .history-status-dot {
+  background: var(--status-error);
+}
+
+.history-delete-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.history-card:hover .history-delete-btn {
+  opacity: 1;
 }
 
 .history-delete-btn:hover {
-  border-color: var(--danger);
-  color: var(--danger);
+  border-color: var(--status-error);
+  color: var(--status-error);
 }
+
+/* ── + New meeting card ────────────────────────────────────── */
+
+.history-card--new {
+  border-left-color: transparent;
+  border-style: dashed;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  cursor: pointer;
+  min-height: 160px;
+  color: var(--text-muted);
+  transition: border-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+}
+
+.history-card--new:hover {
+  border-color: var(--signal-voice);
+  color: var(--text-primary);
+}
+
+.history-new-icon {
+  font-size: 2rem;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.history-new-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* ── Empty card ────────────────────────────────────────────── */
 
 .history-empty-card {
   padding: var(--space-7);
@@ -94,7 +200,19 @@
   margin-bottom: var(--space-2);
 }
 
+/* ── Responsive ────────────────────────────────────────────── */
+
+@media (max-width: 860px) {
+  .history-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 560px) {
+  .history-grid {
+    grid-template-columns: 1fr;
+  }
+
   .history-meta {
     flex-direction: column;
     gap: var(--space-1);

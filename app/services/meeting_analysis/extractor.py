@@ -3,19 +3,25 @@ import logging
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableLambda, RunnablePassthrough
-from langchain_mistralai import ChatMistralAI
+from langchain_openai import ChatOpenAI
 
 from app.core.config import get_settings
-from app.core.exceptions import MissingApiKeyError, MistralApiError
+from app.core.exceptions import MissingApiKeyError, OpenAIApiError
 
 logger = logging.getLogger("meeting_assistant.analysis")
 
 
-def get_llm() -> ChatMistralAI:
+def get_llm() -> ChatOpenAI:
     settings = get_settings()
-    if not settings.mistral_api_key:
-        raise MissingApiKeyError("MISTRAL_API_KEY is not configured on the server.")
-    return ChatMistralAI(model="mistral-small-latest", mistral_api_key=settings.mistral_api_key, temperature=0.2)
+    api_key = settings.explabs_api_key or settings.openai_api_key
+    if not api_key:
+        raise MissingApiKeyError("OPENAI_API_KEY / EXPLABS_API_KEY is not configured on the server.")
+    return ChatOpenAI(
+        model=settings.openai_model,
+        api_key=api_key,
+        base_url=settings.openai_base_url,
+        temperature=0.2,
+    )
 
 
 def _build_chain(system_prompt: str):
@@ -36,7 +42,7 @@ def _run(system_prompt: str, transcript: str, label: str) -> str:
         raise
     except Exception as exc:  # noqa: BLE001
         logger.exception("%s extraction failed", label)
-        raise MistralApiError(f"Failed to extract {label} from the transcript.") from exc
+        raise OpenAIApiError(f"Failed to extract {label} from the transcript.") from exc
 
 
 def extract_action_items(transcript: str) -> str:

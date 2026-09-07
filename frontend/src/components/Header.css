@@ -3,7 +3,8 @@
   top: 0;
   z-index: 20;
   backdrop-filter: blur(14px);
-  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  -webkit-backdrop-filter: blur(14px);
+  background: color-mix(in srgb, var(--bg-base) 78%, transparent);
   border-bottom: 1px solid var(--border);
 }
 
@@ -27,8 +28,8 @@
   width: 36px;
   height: 36px;
   border-radius: var(--radius-sm);
-  background: var(--accent);
-  color: var(--accent-fg);
+  background: var(--signal-voice);
+  color: var(--signal-voice-fg);
   font-family: var(--font-display);
   font-weight: 700;
   display: flex;
@@ -51,7 +52,7 @@
 
 .brand-text span {
   font-size: 0.72rem;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   font-weight: 500;
 }
 
@@ -59,24 +60,6 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
-}
-
-.theme-toggle {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 1px solid var(--border-strong);
-  background: var(--surface);
-  font-size: 1.05rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: border-color var(--transition-fast), transform var(--transition-fast);
-}
-
-.theme-toggle:hover {
-  border-color: var(--accent);
-  transform: rotate(-8deg);
 }
 
 @media (max-width: 560px) {

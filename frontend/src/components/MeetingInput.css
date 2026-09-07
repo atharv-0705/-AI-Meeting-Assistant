@@ -1,3 +1,20 @@
+/* ── Two-column hero ───────────────────────────────────────── */
+
+.hero-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+  align-items: center;
+}
+
+.hero-waveform {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Form ──────────────────────────────────────────────────── */
+
 .meeting-input {
   display: flex;
   flex-direction: column;
@@ -21,16 +38,16 @@
   border-radius: var(--radius-pill);
   font-weight: 600;
   font-size: 0.85rem;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   transition: background var(--transition-fast), color var(--transition-fast);
 }
 
 .mode-tab.active {
-  background: var(--surface-contrast);
-  color: var(--surface-contrast-fg);
+  background: var(--signal-voice);
+  color: var(--signal-voice-fg);
 }
 
-.input-cards {
+.input-fields {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: var(--space-4);
@@ -47,7 +64,7 @@
 .field-label {
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text-muted);
 }
 
 .upload-drop {
@@ -59,7 +76,7 @@
 }
 
 .upload-drop:hover {
-  border-color: var(--accent);
+  border-color: var(--signal-voice);
 }
 
 .upload-icon {
@@ -73,7 +90,7 @@
 
 .upload-hint {
   font-size: 0.72rem;
-  color: var(--text-secondary);
+  color: var(--text-muted);
 }
 
 .field-group {
@@ -88,8 +105,16 @@
   min-width: 180px;
 }
 
+/* ── Responsive ────────────────────────────────────────────── */
+
+@media (max-width: 860px) {
+  .hero-section {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 720px) {
-  .input-cards {
+  .input-fields {
     grid-template-columns: 1fr;
   }
 }

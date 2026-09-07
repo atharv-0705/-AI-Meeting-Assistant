@@ -3,20 +3,26 @@ import logging
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableLambda, RunnablePassthrough
-from langchain_mistralai import ChatMistralAI
+from langchain_openai import ChatOpenAI
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from app.core.config import get_settings
-from app.core.exceptions import MissingApiKeyError, MistralApiError
+from app.core.exceptions import MissingApiKeyError, OpenAIApiError
 
 logger = logging.getLogger("meeting_assistant.analysis")
 
 
-def get_llm(temperature: float = 0.3) -> ChatMistralAI:
+def get_llm(temperature: float = 0.3) -> ChatOpenAI:
     settings = get_settings()
-    if not settings.mistral_api_key:
-        raise MissingApiKeyError("MISTRAL_API_KEY is not configured on the server.")
-    return ChatMistralAI(model="mistral-small-latest", mistral_api_key=settings.mistral_api_key, temperature=temperature)
+    api_key = settings.explabs_api_key or settings.openai_api_key
+    if not api_key:
+        raise MissingApiKeyError("OPENAI_API_KEY / EXPLABS_API_KEY is not configured on the server.")
+    return ChatOpenAI(
+        model=settings.openai_model,
+        api_key=api_key,
+        base_url=settings.openai_base_url,
+        temperature=temperature,
+    )
 
 
 def split_transcript(transcript: str) -> list[str]:
@@ -58,7 +64,7 @@ def summarize(transcript: str) -> str:
         raise
     except Exception as exc:  # noqa: BLE001
         logger.exception("Summarization failed")
-        raise MistralApiError("Failed to generate a meeting summary.") from exc
+        raise OpenAIApiError("Failed to generate a meeting summary.") from exc
 
 
 def generate_title(transcript: str) -> str:
@@ -85,4 +91,4 @@ def generate_title(transcript: str) -> str:
         raise
     except Exception as exc:  # noqa: BLE001
         logger.exception("Title generation failed")
-        raise MistralApiError("Failed to generate a meeting title.") from exc
+        raise OpenAIApiError("Failed to generate a meeting title.") from exc

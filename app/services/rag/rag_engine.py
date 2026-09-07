@@ -3,7 +3,7 @@ import logging
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableLambda, RunnablePassthrough
-from langchain_mistralai import ChatMistralAI
+from langchain_openai import ChatOpenAI
 
 from app.core.config import get_settings
 from app.core.exceptions import MissingApiKeyError, RagRetrievalError
@@ -27,11 +27,17 @@ def _format_docs(docs) -> str:
     return "\n\n".join(doc.page_content for doc in docs)
 
 
-def _get_llm() -> ChatMistralAI:
+def _get_llm() -> ChatOpenAI:
     settings = get_settings()
-    if not settings.mistral_api_key:
-        raise MissingApiKeyError("MISTRAL_API_KEY is not configured on the server.")
-    return ChatMistralAI(model="mistral-small-latest", mistral_api_key=settings.mistral_api_key, temperature=0.3)
+    api_key = settings.explabs_api_key or settings.openai_api_key
+    if not api_key:
+        raise MissingApiKeyError("OPENAI_API_KEY / EXPLABS_API_KEY is not configured on the server.")
+    return ChatOpenAI(
+        model=settings.openai_model,
+        api_key=api_key,
+        base_url=settings.openai_base_url,
+        temperature=0.3,
+    )
 
 
 def build_chat_chain(meeting_id: str):
