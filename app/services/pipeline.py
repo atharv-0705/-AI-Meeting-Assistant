@@ -1,7 +1,9 @@
 import logging
+import os
 
 from app.core.exceptions import AppException
 from app.models.meeting_store import meeting_store
+# pyrefly: ignore [missing-import]
 from app.schemas.meeting import Language, MeetingStatus
 from app.services.audio.chunker import chunk_audio
 from app.services.audio.converter import convert_to_wav
@@ -32,7 +34,11 @@ def run_meeting_pipeline(meeting_id: str, source: str, language: Language) -> No
         if source.startswith(("http://", "https://")):
             meeting_store.update(meeting_id, status=MeetingStatus.DOWNLOADING)
             raw_path = download_youtube_audio(source)
-            wav_path = raw_path  # yt-dlp's postprocessor already outputs .wav
+            if raw_path.endswith(".wav") and os.path.isfile(raw_path):
+                wav_path = raw_path
+            else:
+                logger.info("Downloaded file is not a WAV file (%s). Converting to WAV...", raw_path)
+                wav_path = convert_to_wav(raw_path)
         else:
             meeting_store.update(meeting_id, status=MeetingStatus.DOWNLOADING)
             wav_path = convert_to_wav(source)

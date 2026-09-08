@@ -1,4 +1,5 @@
 import logging
+from typing import cast
 
 from pydub import AudioSegment
 
@@ -11,14 +12,18 @@ def chunk_audio(wav_path: str, chunk_minutes: int = 10) -> list[str]:
     """Split a WAV file into fixed-length chunks. Returns list of chunk file paths."""
     try:
         audio = AudioSegment.from_wav(wav_path)
-    except Exception as exc:  # noqa: BLE001
-        raise AudioExtractionError(f"Failed to read WAV file for chunking: {wav_path}") from exc
+    except Exception:
+        try:
+            audio = AudioSegment.from_file(wav_path)
+        except Exception as exc:  # noqa: BLE001
+            raise AudioExtractionError(f"Failed to read audio file for chunking: {wav_path}") from exc
 
+    audio = cast(AudioSegment, audio)
     chunk_ms = chunk_minutes * 60 * 1000
     chunks: list[str] = []
 
     for i, start in enumerate(range(0, len(audio), chunk_ms)):
-        chunk = audio[start : start + chunk_ms]
+        chunk = cast(AudioSegment, audio[start : start + chunk_ms])
         chunk_path = f"{wav_path}_chunk_{i}.wav"
         chunk.export(chunk_path, format="wav")
         chunks.append(chunk_path)

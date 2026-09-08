@@ -32,11 +32,18 @@ def _get_llm() -> ChatOpenAI:
     api_key = settings.explabs_api_key or settings.openai_api_key
     if not api_key:
         raise MissingApiKeyError("OPENAI_API_KEY / EXPLABS_API_KEY is not configured on the server.")
+    headers = {}
+    if settings.openai_base_url and "openrouter.ai" in settings.openai_base_url:
+        headers = {
+            "HTTP-Referer": "http://localhost:5173",
+            "X-Title": "Nexora AI Assistant",
+        }
     return ChatOpenAI(
         model=settings.openai_model,
         api_key=api_key,
         base_url=settings.openai_base_url,
         temperature=0.3,
+        default_headers=headers or None,
     )
 
 
@@ -60,7 +67,15 @@ def build_chat_chain(meeting_id: str):
 def ask_question(meeting_id: str, question: str) -> str:
     try:
         chain = build_chat_chain(meeting_id)
-        return chain.invoke(question)
+        answer = chain.invoke(question)
+        # Filter out safety guardrail artifacts if returned by certain models
+        if "User Safety:" in answer:
+            cleaned = "\n".join(
+                line for line in answer.splitlines() if not line.strip().startswith("User Safety:")
+            ).strip()
+            if cleaned:
+                answer = cleaned
+        return answer
     except MissingApiKeyError:
         raise
     except Exception as exc:  # noqa: BLE001

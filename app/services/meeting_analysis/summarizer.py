@@ -17,11 +17,18 @@ def get_llm(temperature: float = 0.3) -> ChatOpenAI:
     api_key = settings.explabs_api_key or settings.openai_api_key
     if not api_key:
         raise MissingApiKeyError("OPENAI_API_KEY / EXPLABS_API_KEY is not configured on the server.")
+    headers = {}
+    if settings.openai_base_url and "openrouter.ai" in settings.openai_base_url:
+        headers = {
+            "HTTP-Referer": "http://localhost:5173",
+            "X-Title": "Nexora AI Assistant",
+        }
     return ChatOpenAI(
         model=settings.openai_model,
         api_key=api_key,
         base_url=settings.openai_base_url,
         temperature=temperature,
+        default_headers=headers or None,
     )
 
 
@@ -51,7 +58,8 @@ def summarize(transcript: str) -> str:
                 (
                     "system",
                     "You are an expert meeting summarizer. Combine these partial summaries "
-                    "into one final professional meeting summary in bullet points.",
+                    "into one final professional meeting summary in bullet points. "
+                    "Match the natural language of the transcript (if it is Hinglish or Hindi, write in natural Hinglish/Hindi; if English, write in English).",
                 ),
                 ("human", "{text}"),
             ]
@@ -64,7 +72,7 @@ def summarize(transcript: str) -> str:
         raise
     except Exception as exc:  # noqa: BLE001
         logger.exception("Summarization failed")
-        raise OpenAIApiError("Failed to generate a meeting summary.") from exc
+        raise OpenAIApiError(f"Failed to generate meeting summary: {exc}") from exc
 
 
 def generate_title(transcript: str) -> str:
@@ -77,8 +85,9 @@ def generate_title(transcript: str) -> str:
                 [
                     (
                         "system",
-                        "Based on the meeting transcript, generate a short professional meeting title "
-                        "(max 8 words). Only return the title, nothing else.",
+                        "Based on the meeting transcript, generate a short professional title "
+                        "(max 8 words). Match the language of the transcript (Hinglish/Hindi or English). "
+                        "Only return the title, nothing else.",
                     ),
                     ("human", "{text}"),
                 ]
@@ -86,9 +95,9 @@ def generate_title(transcript: str) -> str:
             | llm
             | StrOutputParser()
         )
-        return title_chain.invoke(transcript[:2000])
+        return title_chain.invoke(transcript[:2000]).strip()
     except MissingApiKeyError:
         raise
     except Exception as exc:  # noqa: BLE001
         logger.exception("Title generation failed")
-        raise OpenAIApiError("Failed to generate a meeting title.") from exc
+        raise OpenAIApiError(f"Failed to generate meeting title: {exc}") from exc

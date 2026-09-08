@@ -99,9 +99,29 @@ def download_youtube_audio(url: str) -> str:
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:  # type: ignore[arg-type]
             info = ydl.extract_info(url, download=True)
-            filename = ydl.prepare_filename(info)
-            filename = filename.replace(".webm", ".wav").replace(".m4a", ".wav")
-        logger.info("Downloaded YouTube audio for url=%s", url)
+            base_filename = ydl.prepare_filename(info)
+            base_name, _ = os.path.splitext(base_filename)
+            wav_filename = f"{base_name}.wav"
+
+            if os.path.isfile(wav_filename):
+                filename = wav_filename
+            else:
+                # Also check requested_downloads if present
+                req_downloads = info.get("requested_downloads") if isinstance(info, dict) else None
+                resolved = None
+                if req_downloads and isinstance(req_downloads, list):
+                    for rd in req_downloads:
+                        fp = rd.get("filepath")
+                        if fp and os.path.isfile(fp):
+                            base_rd, _ = os.path.splitext(fp)
+                            if os.path.isfile(f"{base_rd}.wav"):
+                                resolved = f"{base_rd}.wav"
+                                break
+                            if fp.endswith(".wav"):
+                                resolved = fp
+                                break
+                filename = resolved or base_filename
+        logger.info("Downloaded YouTube audio for url=%s -> %s", url, filename)
         return filename
     except yt_dlp.utils.DownloadError as exc:
         logger.warning("yt-dlp download failed for url=%s", url)

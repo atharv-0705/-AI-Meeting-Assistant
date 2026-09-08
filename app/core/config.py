@@ -3,6 +3,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    # Environment configuration loaded from .env
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     # --- API keys ---
@@ -15,8 +16,8 @@ class Settings(BaseSettings):
 
     # --- Transcription ---
     whisper_model: str = "small"
-    sarvam_stt_model: str = "saaras.5"
-    sarvam_stt_url: str = "https://api.sarvam.ai/speech-to-text-translate"
+    sarvam_stt_model: str = "saaras:v3"
+    sarvam_stt_url: str = "https://api.sarvam.ai/speech-to-text"
     sarvam_piece_seconds: int = 25
 
     # --- Audio processing ---
