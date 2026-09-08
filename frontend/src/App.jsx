@@ -363,7 +363,7 @@ export default function App() {
         branch="IT (AI & Robotics), 2024-2028"
         email="mailto:atharvgupta0705@gmail.com"
         github="https://github.com/atharv-0705"
-        linkedin="https://linkedin.com/in/atharv-gupta"
+        linkedin="https://www.linkedin.com/in/atharv-gupta-45a37b36a/"
       />
 
       {/* Modals & Toasts */}

@@ -7,7 +7,7 @@ export default function DeveloperFooter({
   role,
   email = "mailto:atharvgupta0705@gmail.com",
   github = "https://github.com/atharv-0705",
-  linkedin = "https://linkedin.com/in/atharv-gupta",
+  linkedin = "https://www.linkedin.com/in/atharv-gupta-45a37b36a/",
 }) {
   const [imgSrc, setImgSrc] = useState(avatarUrl || "/Dev_Img.jpeg");
   const displayBranch = branch || role || "IT (AI & Robotics), 2024-2028";
