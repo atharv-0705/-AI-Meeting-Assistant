@@ -1,11 +1,14 @@
-let BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:2210/api/v1";
-if (BASE_URL && !BASE_URL.endsWith("/api/v1")) {
-  BASE_URL = BASE_URL.replace(/\/$/, "") + "/api/v1";
+let PRIMARY_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:2210/api/v1";
+if (PRIMARY_URL && !PRIMARY_URL.endsWith("/api/v1")) {
+  PRIMARY_URL = PRIMARY_URL.replace(/\/$/, "") + "/api/v1";
 }
+
+let activeBaseUrl = PRIMARY_URL;
 
 /**
  * Wraps fetch, unwraps the backend's { success, data, message } / { success, error } envelope,
- * and throws a normalized ApiError on any failure (network, validation, or server-side).
+ * automatically falls back between port 2210 and port 8000 if needed,
+ * and throws a normalized ApiError on any failure.
  */
 class ApiError extends Error {
   constructor(message, code = "NETWORK_ERROR", status = 0) {
@@ -18,13 +21,33 @@ class ApiError extends Error {
 async function request(path, options = {}) {
   let response;
   try {
-    response = await fetch(`${BASE_URL}${path}`, options);
+    response = await fetch(`${activeBaseUrl}${path}`, options);
   } catch {
-    throw new ApiError(
-      "Could not reach the Nexora backend. Is it running at " + BASE_URL + "?",
-      "BACKEND_UNAVAILABLE",
-      0
-    );
+    // If request to primary port failed, try alternate port (2210 <-> 8000)
+    const fallbackUrl = activeBaseUrl.includes(":2210")
+      ? activeBaseUrl.replace(":2210", ":8000")
+      : activeBaseUrl.includes(":8000")
+      ? activeBaseUrl.replace(":8000", ":2210")
+      : null;
+
+    if (fallbackUrl) {
+      try {
+        response = await fetch(`${fallbackUrl}${path}`, options);
+        activeBaseUrl = fallbackUrl; // Lock in the active backend port
+      } catch {
+        throw new ApiError(
+          "Could not reach the Nexora backend. Is FastAPI running?",
+          "BACKEND_UNAVAILABLE",
+          0
+        );
+      }
+    } else {
+      throw new ApiError(
+        "Could not reach the Nexora backend. Is it running at " + activeBaseUrl + "?",
+        "BACKEND_UNAVAILABLE",
+        0
+      );
+    }
   }
 
   let body;
@@ -82,7 +105,7 @@ export const api = {
   exportMeeting: async (meetingId, format, type = "full") => {
     let response;
     try {
-      response = await fetch(`${BASE_URL}/meetings/${meetingId}/export?format=${format}&type=${type}`);
+      response = await fetch(`${activeBaseUrl}/meetings/${meetingId}/export?format=${format}&type=${type}`);
     } catch {
       throw new ApiError("Could not reach the backend to export this meeting.", "BACKEND_UNAVAILABLE", 0);
     }

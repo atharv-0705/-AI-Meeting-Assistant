@@ -55,7 +55,7 @@ export default function PipelineWaveform({
               ? isAiSide
                 ? "bg-signal-ai shadow-[0_0_8px_rgba(124,92,252,0.8)]"
                 : "bg-signal-voice shadow-[0_0_8px_rgba(29,185,117,0.8)]"
-              : "bg-white/10"
+              : "bg-black/10 dark:bg-white/10"
             : isAiSide
             ? "bg-signal-ai/70 group-hover:bg-signal-ai"
             : "bg-signal-voice/70 group-hover:bg-signal-voice";
@@ -94,7 +94,7 @@ export default function PipelineWaveform({
             </div>
 
             {/* Progress bar with voice -> AI gradient */}
-            <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+            <div className="w-full h-1.5 bg-black/10 dark:bg-white/10 rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-signal-voice to-signal-ai transition-all duration-500 rounded-full"
                 style={{ width: `${Math.max(5, percent)}%` }}

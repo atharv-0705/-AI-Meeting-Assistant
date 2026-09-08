@@ -248,7 +248,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-bg-base-light dark:bg-bg-base text-text-primary-light dark:text-text-primary font-sans transition-colors duration-300">
+    <div className="min-h-screen flex flex-col font-sans transition-colors duration-300" style={{ background: 'var(--bg-gradient)', color: 'var(--text-primary)' }}>
       {/* Top Header */}
       <Header
         backendOnline={backendOnline}
@@ -260,12 +260,12 @@ export default function App() {
       <main className="flex-1 w-full max-w-6xl mx-auto px-6 py-8">
         {/* Backend Offline Alert Banner */}
         {backendOnline === false && (
-          <div className="mb-8 p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm flex items-center justify-between">
+          <div className="mb-8 p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-sm flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-lg">⚠️</span>
               <span>
                 <strong>Backend unavailable.</strong> Ensure the FastAPI server is running with{" "}
-                <code className="font-mono bg-black/30 px-1.5 py-0.5 rounded text-xs">
+                <code className="font-mono bg-black/5 dark:bg-black/30 px-1.5 py-0.5 rounded text-xs border border-red-500/20">
                   uvicorn main:app --port 2210 --reload
                 </code>
               </span>
@@ -274,7 +274,7 @@ export default function App() {
               onClick={() => {
                 api.health().then(() => setBackendOnline(true)).catch(() => setBackendOnline(false));
               }}
-              className="text-xs font-mono underline hover:text-red-300 cursor-pointer"
+              className="text-xs font-mono underline hover:text-red-700 dark:hover:text-red-300 cursor-pointer"
             >
               Retry
             </button>
@@ -356,13 +356,14 @@ export default function App() {
         )}
       </main>
 
-      {/* Recruiter-Facing Developer Footer */}
+      {/* Developer Footer */}
       <DeveloperFooter
-        name="Atharva"
-        role="Full-Stack AI Engineer"
-        email="mailto:atharva@example.com"
+        avatarUrl="/Dev_Img.jpeg"
+        name="Atharv Gupta"
+        branch="IT (AI & Robotics), 2024-2028"
+        email="mailto:atharvgupta0705@gmail.com"
         github="https://github.com/atharv-0705"
-        linkedin="https://linkedin.com"
+        linkedin="https://linkedin.com/in/atharv-gupta"
       />
 
       {/* Modals & Toasts */}

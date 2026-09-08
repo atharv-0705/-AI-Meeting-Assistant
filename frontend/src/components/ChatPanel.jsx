@@ -98,7 +98,7 @@ export default function ChatPanel({ meetingId }) {
           onKeyDown={handleKeyDown}
           disabled={sending}
         />
-        <button className="btn btn-primary" onClick={send} disabled={sending || !input.trim()}>
+        <button className="chat-send-btn" onClick={send} disabled={sending || !input.trim()}>
           Send
         </button>
       </div>

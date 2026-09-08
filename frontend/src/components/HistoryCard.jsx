@@ -43,7 +43,7 @@ export function HistoryCard({
       <div>
         <div className="flex items-center justify-between gap-2 mb-3">
           <div className="flex items-center gap-1.5">
-            <span className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-white/5 border border-border-subtle text-text-muted">
+            <span className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-black/5 dark:bg-white/5 border border-border-subtle text-text-muted">
               {source_type === "file" ? "FILE" : "YOUTUBE"}
             </span>
             {duration && (
@@ -59,8 +59,8 @@ export function HistoryCard({
               isCompleted
                 ? "bg-signal-voice/10 text-signal-voice border border-signal-voice/20"
                 : isProcessing
-                ? "bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 animate-pulse"
-                : "bg-red-500/10 text-red-400 border border-red-500/20"
+                ? "bg-yellow-400/10 text-yellow-600 dark:text-yellow-400 border border-yellow-400/20 animate-pulse"
+                : "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20"
             }`}
           >
             <span
@@ -92,7 +92,7 @@ export function HistoryCard({
           type="button"
           onClick={() => onOpen?.(id)}
           disabled={!isCompleted}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-signal-ai hover:text-purple-300 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-signal-ai hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-opacity"
         >
           <span>Open Dashboard</span>
           <span>→</span>
@@ -106,7 +106,7 @@ export function HistoryCard({
               onDelete(id);
             }}
             title="Delete meeting"
-            className="text-text-muted hover:text-red-400 p-1.5 rounded-lg hover:bg-red-500/10 transition-colors cursor-pointer"
+            className="text-text-muted hover:text-red-500 p-1.5 rounded-lg hover:bg-red-500/10 transition-colors cursor-pointer"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -124,7 +124,7 @@ export function NewMeetingCard({ onNew }) {
       onClick={onNew}
       className="group border-2 border-dashed border-border-subtle hover:border-signal-voice/50 bg-surface-card/40 hover:bg-surface-card/80 rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300 min-h-[190px]"
     >
-      <div className="w-10 h-10 rounded-xl bg-signal-voice/10 group-hover:bg-signal-voice group-hover:text-black text-signal-voice flex items-center justify-center text-xl font-bold mb-3 transition-colors duration-200">
+      <div className="w-10 h-10 rounded-xl bg-signal-voice/10 group-hover:bg-signal-voice group-hover:text-white dark:group-hover:text-black text-signal-voice flex items-center justify-center text-xl font-bold mb-3 transition-colors duration-200">
         +
       </div>
       <h4 className="font-semibold text-text-primary text-sm font-display mb-1 group-hover:text-signal-voice transition-colors">

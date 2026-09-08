@@ -57,11 +57,11 @@ export default function Hero({
       <div className="text-center md:text-left mb-10">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-signal-voice/10 border border-signal-voice/20 text-signal-voice text-xs font-mono mb-4">
           <span className="w-1.5 h-1.5 rounded-full bg-signal-voice animate-ping" />
-          NEXORA v2.0 • Acoustic RAG Engine
+          NEXORA • Acoustic RAG Engine
         </div>
         <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-text-primary leading-tight font-display">
           From Spoken Words to <br className="hidden md:block" />
-          <span className="bg-gradient-to-r from-signal-voice via-emerald-300 to-signal-ai bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-emerald-600 via-teal-500 to-indigo-600 dark:from-signal-voice dark:via-emerald-300 dark:to-signal-ai bg-clip-text text-transparent">
             Living Intelligence
           </span>
         </h1>
@@ -92,7 +92,7 @@ export default function Hero({
                   }}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 cursor-pointer ${
                     mode === "youtube"
-                      ? "bg-signal-voice text-black font-semibold shadow-sm"
+                      ? "bg-signal-voice text-white dark:text-black font-semibold shadow-sm"
                       : "text-text-muted hover:text-text-primary"
                   }`}
                 >
@@ -107,7 +107,7 @@ export default function Hero({
                   }}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 cursor-pointer ${
                     mode === "file"
-                      ? "bg-signal-voice text-black font-semibold shadow-sm"
+                      ? "bg-signal-voice text-white dark:text-black font-semibold shadow-sm"
                       : "text-text-muted hover:text-text-primary"
                   }`}
                 >
@@ -235,11 +235,11 @@ export default function Hero({
             <button
               type="submit"
               disabled={isProcessing}
-              className="w-full py-3.5 px-6 rounded-xl bg-signal-voice hover:bg-emerald-400 text-black font-semibold text-sm shadow-lg shadow-signal-voice/25 hover:shadow-signal-voice/40 transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 select-none"
+              className="w-full py-3.5 px-6 rounded-xl bg-signal-voice hover:bg-emerald-600 dark:hover:bg-emerald-400 text-white dark:text-black font-semibold text-sm shadow-lg shadow-signal-voice/20 hover:shadow-signal-voice/35 transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 select-none"
             >
               {isProcessing ? (
                 <>
-                  <svg className="animate-spin h-4 w-4 text-black" viewBox="0 0 24 24">
+                  <svg className="animate-spin h-4 w-4 text-white dark:text-black" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>

@@ -1,53 +1,77 @@
 /* ============================================================
-   NEXORA design tokens — dark-only, dual-accent system
-   Voice (human input):  #1DB975  → capture, recording, early pipeline
-   AI    (machine out):  #7C5CFC  → transcripts, RAG, late pipeline
+   NEXORA design tokens — dual-theme system
+   Voice (human input):  Emerald green  → capture, recording, early pipeline
+   AI    (machine out):  Indigo/violet  → transcripts, RAG, late pipeline
    ============================================================ */
 
+/* ── LIGHT MODE (default) ─────────────────────────────────── */
 :root {
-  /* ── Backgrounds ─────────────────────────────────────────── */
-  --bg-base: #0A0F0D;
+  /* ── RGB channels for Tailwind opacity utility support ─── */
+  --bg-base-rgb: 248 250 252;
+  --bg-base: #F8FAFC;
   --bg-gradient: radial-gradient(
       1200px 600px at 15% -10%,
-      rgba(29, 185, 117, 0.10),
+      rgba(16, 185, 129, 0.08),
       transparent 60%
     ),
     radial-gradient(
       900px 500px at 100% 0%,
-      rgba(124, 92, 252, 0.07),
+      rgba(99, 102, 241, 0.07),
       transparent 55%
     ),
-    #0A0F0D;
+    #F8FAFC;
 
   /* ── Surfaces ────────────────────────────────────────────── */
-  --surface: #121815;
-  --surface-glass: rgba(18, 24, 21, 0.6);
+  --surface-rgb: 255 255 255;
+  --surface: #FFFFFF;
+  --surface-glass: rgba(255, 255, 255, 0.85);
+  --surface-card-rgb: 241 245 249;
+  --surface-card: #F1F5F9;
+  --surface-warm: #FEF9E7;
+  --surface-cool: #F1F5F9;
+  --surface-contrast: #0F172A;
+  --surface-contrast-fg: #F8FAFC;
 
   /* ── Accent: Voice (human input) ─────────────────────────── */
-  --signal-voice: #1DB975;
-  --signal-voice-fg: #04140f;
-  --signal-voice-soft: rgba(29, 185, 117, 0.16);
+  --signal-voice-rgb: 16 185 129;
+  --signal-voice: #10B981;
+  --signal-voice-fg: #FFFFFF;
+  --signal-voice-soft: rgba(16, 185, 129, 0.14);
 
   /* ── Accent: AI (machine output) ─────────────────────────── */
-  --signal-ai: #7C5CFC;
-  --signal-ai-fg: #f0ecff;
-  --signal-ai-soft: rgba(124, 92, 252, 0.16);
+  --signal-ai-rgb: 99 102 241;
+  --signal-ai: #6366F1;
+  --signal-ai-fg: #FFFFFF;
+  --signal-ai-soft: rgba(99, 102, 241, 0.12);
+
+  /* ── Legacy CSS Module aliases ───────────────────────────── */
+  --bg: var(--bg-base);
+  --accent: var(--signal-voice);
+  --accent-fg: #FFFFFF;
+  --accent-soft: var(--signal-voice-soft);
+  --text-secondary: var(--text-muted);
+  --success: var(--signal-voice);
+  --danger: var(--status-error);
 
   /* ── Text ────────────────────────────────────────────────── */
-  --text-primary: #EDF2F0;
-  --text-muted: #8B978F;
+  --text-primary-rgb: 15 23 42;
+  --text-primary: #0F172A;
+  --text-muted-rgb: 100 116 139;
+  --text-muted: #64748B;
 
   /* ── Status ──────────────────────────────────────────────── */
-  --status-error: #E5484D;
-  --status-error-soft: rgba(229, 72, 77, 0.16);
+  --status-error-rgb: 239 68 68;
+  --status-error: #EF4444;
+  --status-error-soft: rgba(239, 68 68, 0.12);
 
   /* ── Borders ─────────────────────────────────────────────── */
-  --border: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.14);
+  --border-rgb: 15 23 42;
+  --border: rgba(15, 23, 42, 0.08);
+  --border-strong: rgba(15, 23, 42, 0.15);
 
   /* ── Shadows ─────────────────────────────────────────────── */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
 
   /* ── Typography ──────────────────────────────────────────── */
   --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
@@ -72,6 +96,78 @@
   /* ── Transitions ─────────────────────────────────────────── */
   --transition-fast: 150ms ease;
   --transition-base: 220ms ease;
+
+  color-scheme: light;
+}
+
+/* ── DARK MODE ────────────────────────────────────────────── */
+.dark {
+  /* ── RGB channels for Tailwind opacity utility support ─── */
+  --bg-base-rgb: 10 15 13;
+  --bg-base: #0A0F0D;
+  --bg-gradient: radial-gradient(
+      1200px 600px at 15% -10%,
+      rgba(29, 185, 117, 0.10),
+      transparent 60%
+    ),
+    radial-gradient(
+      900px 500px at 100% 0%,
+      rgba(124, 92, 252, 0.07),
+      transparent 55%
+    ),
+    #0A0F0D;
+
+  /* ── Surfaces ────────────────────────────────────────────── */
+  --surface-rgb: 18 24 21;
+  --surface: #121815;
+  --surface-glass: rgba(18, 24, 21, 0.75);
+  --surface-card-rgb: 21 29 25;
+  --surface-card: #151D19;
+  --surface-warm: #16201C;
+  --surface-cool: #151824;
+  --surface-contrast: #FFFFFF;
+  --surface-contrast-fg: #0A0F0D;
+
+  /* ── Accent: Voice (human input) ─────────────────────────── */
+  --signal-voice-rgb: 29 185 117;
+  --signal-voice: #1DB975;
+  --signal-voice-fg: #04140F;
+  --signal-voice-soft: rgba(29, 185, 117, 0.16);
+
+  /* ── Accent: AI (machine output) ─────────────────────────── */
+  --signal-ai-rgb: 124 92 252;
+  --signal-ai: #7C5CFC;
+  --signal-ai-fg: #F0ECFF;
+  --signal-ai-soft: rgba(124, 92, 252, 0.16);
+
+  /* ── Legacy CSS Module aliases ───────────────────────────── */
+  --bg: var(--bg-base);
+  --accent: var(--signal-voice);
+  --accent-fg: #04140F;
+  --accent-soft: var(--signal-voice-soft);
+  --text-secondary: var(--text-muted);
+  --success: var(--signal-voice);
+  --danger: var(--status-error);
+
+  /* ── Text ────────────────────────────────────────────────── */
+  --text-primary-rgb: 237 242 240;
+  --text-primary: #EDF2F0;
+  --text-muted-rgb: 139 151 143;
+  --text-muted: #8B978F;
+
+  /* ── Status ──────────────────────────────────────────────── */
+  --status-error-rgb: 229 72 77;
+  --status-error: #E5484D;
+  --status-error-soft: rgba(229, 72, 77, 0.16);
+
+  /* ── Borders ─────────────────────────────────────────────── */
+  --border-rgb: 255 255 255;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.14);
+
+  /* ── Shadows ─────────────────────────────────────────────── */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.4);
 
   color-scheme: dark;
 }

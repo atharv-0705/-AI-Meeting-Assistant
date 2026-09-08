@@ -4,7 +4,7 @@
   z-index: 20;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  background: color-mix(in srgb, var(--bg-base) 78%, transparent);
+  background: var(--surface-glass);
   border-bottom: 1px solid var(--border);
 }
 

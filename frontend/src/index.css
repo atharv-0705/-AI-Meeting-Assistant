@@ -4,13 +4,20 @@
 
 @layer base {
   :root {
-    color-scheme: dark light;
+    color-scheme: light;
+  }
+
+  .dark {
+    color-scheme: dark;
   }
 
   body {
     margin: 0;
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     min-height: 100vh;
+    background: var(--bg-base);
+    color: var(--text-primary);
+    transition: background 0.3s ease, color 0.3s ease;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -27,7 +34,7 @@
     @apply inline-flex items-center justify-center gap-2 font-medium px-4 py-2.5 rounded-xl transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-sm select-none;
   }
   .btn-primary {
-    @apply bg-signal-voice text-black font-semibold shadow-lg shadow-signal-voice/20 hover:brightness-110 active:scale-95;
+    @apply bg-signal-voice text-black dark:text-black font-semibold shadow-lg shadow-signal-voice/20 hover:brightness-110 active:scale-95;
   }
   .btn-secondary {
     @apply bg-surface-card border border-border-subtle text-text-primary hover:bg-surface-card/80 hover:border-border-focus active:scale-95;
@@ -37,7 +44,23 @@
   }
 }
 
-/* Custom scrollbars */
+/* Custom scrollbars — dark */
+.dark ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.dark ::-webkit-scrollbar-track {
+  background: transparent;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* Custom scrollbars — light */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -46,9 +69,10 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.12);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(0, 0, 0, 0.22);
 }
+

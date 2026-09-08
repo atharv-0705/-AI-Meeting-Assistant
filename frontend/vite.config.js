@@ -1,7 +1,7 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
-// https://vite.dev/config/
+// Vite dev server config — dual theme active
 export default defineConfig({
   plugins: [react()],
 })
