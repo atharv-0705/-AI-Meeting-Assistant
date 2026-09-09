@@ -9,6 +9,14 @@ from app.core.logging_config import configure_logging
 configure_logging()
 settings = get_settings()
 
+# Ensure ffmpeg and ffprobe are available in system PATH for yt-dlp and pydub
+try:
+    import static_ffmpeg
+    static_ffmpeg.add_paths()
+except Exception:
+    pass
+
+
 # Write YouTube cookies if provided in environment variables
 if settings.youtube_cookies and settings.yt_cookiefile:
     import logging

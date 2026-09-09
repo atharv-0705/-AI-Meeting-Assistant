@@ -9,7 +9,9 @@ python-dotenv>=1.0
 yt-dlp>=2026.7.4
 pydub>=0.25.1
 audioop-lts>=0.2.2
+static-ffmpeg>=2.5
 # openai-whisper  # Commented out for cloud deployment to stay under 512MB RAM (Sarvam API is used instead)
+
 
 requests>=2.32
 

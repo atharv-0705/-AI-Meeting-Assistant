@@ -124,13 +124,14 @@ def download_youtube_audio(url: str) -> str:
         logger.info("Downloaded YouTube audio for url=%s -> %s", url, filename)
         return filename
     except yt_dlp.utils.DownloadError as exc:
-        logger.warning("yt-dlp download failed for url=%s", url)
+        logger.warning("yt-dlp download failed for url=%s: %s", url, exc)
         raise DownloadFailedError(
-            f"Could not download audio from the provided YouTube URL. Detail: {exc}"
+            f"YouTube download failed: {exc}"
         ) from exc
     except Exception as exc:  # noqa: BLE001 - convert anything unexpected into a clean API error
-        logger.exception("Unexpected error downloading url=%s", url)
-        raise DownloadFailedError("An unexpected error occurred while downloading the video.") from exc
+        logger.exception("Unexpected error downloading url=%s: %s", url, exc)
+        raise DownloadFailedError(f"Download failed ({type(exc).__name__}): {exc}") from exc
+
 
 
 def extract_video_title(url: str) -> str | None:
