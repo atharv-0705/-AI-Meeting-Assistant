@@ -5,6 +5,11 @@
 
 ---
 
+## Live Link
+https://ai-meeting-assistant-chi-ecru.vercel.app/
+
+---
+
 ## 🌟 Overview
 
 **NEXORA** is a full-stack, AI-powered meeting and video intelligence platform. It processes long meeting recordings and YouTube video streams, transcribes speech across languages, extracts structured executive summaries and action items using LLMs, indexes transcripts into a vector database (ChromaDB), and enables interactive RAG-based conversations.
