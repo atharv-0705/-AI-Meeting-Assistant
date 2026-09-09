@@ -7,20 +7,20 @@ pydantic-settings>=2.6
 python-dotenv>=1.0
 
 yt-dlp>=2026.7.4
-# bgutil-ytdlp-pot-provider-rs  # Rust-based POT provider plugin
 pydub>=0.25.1
-openai-whisper
+# openai-whisper  # Commented out for cloud deployment to stay under 512MB RAM (Sarvam API is used instead)
 requests>=2.32
 
 langchain-core>=0.3
+langchain-community>=0.3
 langchain-text-splitters>=0.3
 langchain-openai>=0.1
 langchain-chroma>=0.2
-langchain-huggingface>=0.1
 chromadb>=0.5
-sentence-transformers>=3.0
+fastembed>=0.3
 tiktoken>=0.7
 
 fpdf2>=2.8
 aiofiles>=24.1
+
 

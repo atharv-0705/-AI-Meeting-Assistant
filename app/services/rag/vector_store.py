@@ -15,10 +15,17 @@ _embeddings = None  # loaded once, reused across all meetings
 def get_embeddings() -> 'Any':
     global _embeddings
     if _embeddings is None:
-        from langchain_huggingface import HuggingFaceEmbeddings
-        settings = get_settings()
-        _embeddings = HuggingFaceEmbeddings(model_name=settings.embedding_model, model_kwargs={"device": "cpu"})
+        try:
+            from langchain_community.embeddings import FastEmbedEmbeddings
+            _embeddings = FastEmbedEmbeddings(model_name="BAAI/bge-small-en-v1.5")
+            logger.info("Loaded FastEmbed (ONNX) embeddings for low-memory environment")
+        except Exception:
+            from langchain_huggingface import HuggingFaceEmbeddings
+            settings = get_settings()
+            _embeddings = HuggingFaceEmbeddings(model_name=settings.embedding_model, model_kwargs={"device": "cpu"})
+            logger.info("Loaded HuggingFaceEmbeddings (PyTorch CPU)")
     return _embeddings
+
 
 
 def _collection_name(meeting_id: str) -> str:
