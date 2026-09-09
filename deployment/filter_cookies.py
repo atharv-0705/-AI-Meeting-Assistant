@@ -25,4 +25,13 @@ def filter_youtube_cookies(input_file: str, output_file: str):
     print(f"New size: {new_size / 1024:.2f} KB")
 
 if __name__ == "__main__":
-    filter_youtube_cookies("youtube.com_cookies.txt", "filtered_cookies.txt")
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    input_file = os.path.join(script_dir, "youtube.com_cookies.txt")
+    output_file = os.path.join(script_dir, "filtered_cookies.txt")
+
+    if not os.path.exists(input_file):
+        input_file = "youtube.com_cookies.txt"
+        output_file = "filtered_cookies.txt"
+
+    filter_youtube_cookies(input_file, output_file)
+
