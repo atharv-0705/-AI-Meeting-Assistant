@@ -88,9 +88,9 @@ def _build_extractor_args(
     if client_list is not None:
         player_clients = client_list
     elif cookie_path:
-        player_clients = ["web", "mweb", "android"]
+        player_clients = ["visionos", "web_embedded", "android", "web"]
     else:
-        player_clients = ["android", "ios", "mweb", "web"]
+        player_clients = ["visionos", "web_embedded", "android", "web"]
 
     extractor_args: dict[str, Any] = {
         "youtube": {
@@ -140,16 +140,17 @@ def _extract_and_download(
 
 def download_youtube_audio(url: str) -> str:
     """Download a YouTube video's audio and return the path to the resulting WAV file.
-    Includes an automatic fallback to the Android client if bot detection or
-    cookie invalidation occurs."""
+    Includes resilient multi-tier fallbacks using visionos, web_embedded, and android
+    clients to bypass bot detection, SABR format restrictions, and cookie expiration."""
     import yt_dlp
     settings = get_settings()
     os.makedirs(settings.download_dir, exist_ok=True)
 
     cookie_path = _resolve_cookiefile()
     extractor_args = _build_extractor_args(cookie_path)
-
     output_path = os.path.join(settings.download_dir, "%(title)s.%(ext)s")
+
+    # Stage 1: Primary attempt with resolved cookies (if any) and modern visionos/web_embedded client priority
     ydl_opts: dict[str, Any] = {
         "format": "bestaudio/best",
         "outtmpl": output_path,
@@ -164,52 +165,63 @@ def download_youtube_audio(url: str) -> str:
         ydl_opts["cookiefile"] = cookie_path
         logger.info("Using YouTube cookies from %s", cookie_path)
     else:
-        logger.warning("No YouTube cookies file found. Proceeding with standard client rotation.")
+        logger.info("No YouTube cookies file found. Proceeding with visionos/web_embedded clients.")
 
     try:
         filename = _extract_and_download(url, ydl_opts, settings.download_dir)
         logger.info("Downloaded YouTube audio for url=%s -> %s", url, filename)
         return filename
     except yt_dlp.utils.DownloadError as exc:
-        err_msg = str(exc)
-        logger.warning("Primary yt-dlp download failed for url=%s: %s", url, err_msg)
+        primary_err = str(exc)
+        logger.warning("Primary yt-dlp download failed for url=%s: %s", url, primary_err)
 
-        # If flagged by YouTube bot detection, cookie expiry, or format issue, retry with Android client
-        needs_fallback = any(
-            pattern in err_msg.lower()
-            for pattern in [
-                "sign in to confirm you're not a bot",
-                "confirm you're not a bot",
-                "cookies",
-                "bot",
-                "403",
-                "requested format is not available",
-            ]
-        )
-        if needs_fallback:
-            logger.info("Attempting fallback download with Android client without cookies...")
-            fallback_opts: dict[str, Any] = {
-                "format": "bestaudio/best",
-                "outtmpl": output_path,
-                "postprocessors": [
-                    {"key": "FFmpegExtractAudio", "preferredcodec": "wav", "preferredquality": "192"}
-                ],
-                "extractor_args": _build_extractor_args(None, client_list=["android"]),
-                "quiet": False,
-                "no_warnings": False,
-            }
-            try:
-                filename = _extract_and_download(url, fallback_opts, settings.download_dir)
-                logger.info("Fallback download succeeded for url=%s -> %s", url, filename)
-                return filename
-            except Exception as fallback_exc:
-                logger.error("Fallback download also failed: %s", fallback_exc)
+        # Stage 2: Fallback WITHOUT cookies using visionos and web_embedded clients.
+        # An invalid, expired, or rotated cookie file is often the exact trigger for YouTube bot blocks.
+        logger.info("Attempting Fallback 1 (clean visionos/web_embedded without cookies)...")
+        fallback_opts_clean: dict[str, Any] = {
+            "format": "bestaudio/best",
+            "outtmpl": output_path,
+            "postprocessors": [
+                {"key": "FFmpegExtractAudio", "preferredcodec": "wav", "preferredquality": "192"}
+            ],
+            "extractor_args": _build_extractor_args(None, client_list=["visionos", "web_embedded"]),
+            "quiet": False,
+            "no_warnings": False,
+        }
+        try:
+            filename = _extract_and_download(url, fallback_opts_clean, settings.download_dir)
+            logger.info("Fallback 1 succeeded for url=%s -> %s", url, filename)
+            return filename
+        except Exception as fb1_exc:
+            logger.warning("Fallback 1 failed: %s", fb1_exc)
 
-        raise DownloadFailedError(f"YouTube download failed: {exc}") from exc
+        # Stage 3: Universal format fallback with format 18 (360p progressive MP4 audio/video)
+        logger.info("Attempting Fallback 2 (universal format fallback bestaudio/18/best)...")
+        fallback_opts_universal: dict[str, Any] = {
+            "format": "bestaudio/18/best",
+            "outtmpl": output_path,
+            "postprocessors": [
+                {"key": "FFmpegExtractAudio", "preferredcodec": "wav", "preferredquality": "192"}
+            ],
+            "extractor_args": _build_extractor_args(None, client_list=["visionos", "web_embedded", "android"]),
+            "quiet": False,
+            "no_warnings": False,
+        }
+        try:
+            filename = _extract_and_download(url, fallback_opts_universal, settings.download_dir)
+            logger.info("Fallback 2 succeeded for url=%s -> %s", url, filename)
+            return filename
+        except Exception as fb2_exc:
+            logger.error("Fallback 2 also failed: %s", fb2_exc)
+
+        # If all fallbacks failed, raise a detailed error
+        raise DownloadFailedError(
+            f"YouTube download failed after multiple resilient attempts. "
+            f"Primary: {primary_err} | Fallback: {fb2_exc}"
+        ) from exc
     except Exception as exc:  # noqa: BLE001
         logger.exception("Unexpected error downloading url=%s: %s", url, exc)
         raise DownloadFailedError(f"Download failed ({type(exc).__name__}): {exc}") from exc
-
 
 
 def extract_video_title(url: str) -> str | None:
@@ -230,12 +242,12 @@ def extract_video_title(url: str) -> str | None:
             info = ydl.extract_info(url, download=False)
             return info.get("title")
     except Exception:
-        # Fallback to Android client
+        # Fallback to visionos and web_embedded without cookies
         try:
             fallback_opts: dict[str, Any] = {
                 "quiet": True,
                 "skip_download": True,
-                "extractor_args": _build_extractor_args(None, client_list=["android"]),
+                "extractor_args": _build_extractor_args(None, client_list=["visionos", "web_embedded"]),
             }
             with yt_dlp.YoutubeDL(fallback_opts) as ydl:  # type: ignore[arg-type]
                 info = ydl.extract_info(url, download=False)
