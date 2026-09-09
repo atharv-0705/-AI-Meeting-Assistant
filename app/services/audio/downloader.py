@@ -24,7 +24,12 @@ def _is_valid_netscape_cookies(path: str) -> bool:
 
 
 def _resolve_cookiefile() -> str | None:
-    """Find valid cookie file from config, Render Secret Files (/etc/secrets/), or root."""
+    """Find valid cookie file from config, Render Secret Files (/etc/secrets/), or root.
+    Always copies to a writable location (like /tmp) because /etc/secrets is read-only
+    and yt-dlp attempts to write updated session cookies back to the file."""
+    import shutil
+    import tempfile
+
     settings = get_settings()
     candidates = [
         "/etc/secrets/cookies.txt",
@@ -34,12 +39,19 @@ def _resolve_cookiefile() -> str | None:
     for path in candidates:
         if path and os.path.isfile(path) and os.path.getsize(path) > 0:
             if _is_valid_netscape_cookies(path):
-                return path
+                try:
+                    writable_path = os.path.join(tempfile.gettempdir(), "yt_writable_cookies.txt")
+                    shutil.copyfile(path, writable_path)
+                    return writable_path
+                except Exception as e:
+                    logger.warning("Failed to copy cookie file to temp dir: %s, using original", e)
+                    return path
             logger.warning(
                 "Cookie file at '%s' found but is not a valid Netscape format file. Skipping it.",
                 path,
             )
     return None
+
 
 
 def _build_extractor_args(cookie_path: str | None) -> dict[str, Any]:
