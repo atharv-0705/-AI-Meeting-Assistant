@@ -20,22 +20,35 @@ except Exception:
 # Write YouTube cookies if provided in environment variables
 if settings.youtube_cookies and settings.yt_cookiefile:
     import logging
+    import os
     logger = logging.getLogger("meeting_assistant")
     try:
-        cookie_data = settings.youtube_cookies.strip()
-        # Handle escaped newlines/tabs when stored in env vars
-        if "\\n" in cookie_data:
-            cookie_data = cookie_data.replace("\\n", "\n")
-        if "\\t" in cookie_data:
-            cookie_data = cookie_data.replace("\\t", "\t")
+        raw_val = settings.youtube_cookies.strip()
+        cookie_data = None
 
-        # Ensure standard Netscape header is present
-        if not cookie_data.startswith("# Netscape"):
-            cookie_data = f"# Netscape HTTP Cookie File\n{cookie_data}"
+        if os.path.isfile(raw_val):
+            logger.info("Loading YouTube cookies from referenced file: %s", raw_val)
+            with open(raw_val, "r", encoding="utf-8", errors="ignore") as f:
+                cookie_data = f.read().strip()
+        elif "\t" in raw_val:
+            cookie_data = raw_val
+            if "\\n" in cookie_data:
+                cookie_data = cookie_data.replace("\\n", "\n")
+            if "\\t" in cookie_data:
+                cookie_data = cookie_data.replace("\\t", "\t")
 
-        with open(settings.yt_cookiefile, "w", encoding="utf-8") as f:
-            f.write(cookie_data)
-        logger.info("Successfully wrote sanitized YouTube cookies to %s", settings.yt_cookiefile)
+        if cookie_data and "\t" in cookie_data:
+            if not cookie_data.startswith("# Netscape"):
+                cookie_data = f"# Netscape HTTP Cookie File\n{cookie_data}"
+
+            with open(settings.yt_cookiefile, "w", encoding="utf-8") as f:
+                f.write(cookie_data)
+            logger.info("Successfully wrote sanitized YouTube cookies to %s", settings.yt_cookiefile)
+        else:
+            logger.warning(
+                "YOUTUBE_COOKIES value is neither an existing file path nor tab-delimited cookie text. Leaving %s untouched.",
+                settings.yt_cookiefile,
+            )
     except Exception as e:
         logger.error("Failed to write YouTube cookies: %s", e)
 
