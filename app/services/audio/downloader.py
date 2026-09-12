@@ -34,19 +34,55 @@ def _is_valid_netscape_cookies(path: str) -> bool:
 
 
 def _resolve_cookiefile() -> str | None:
-    """Find valid cookie file from config, Render Secret Files (/etc/secrets/), or cookies folder.
-    Always copies to a writable location (like /tmp) because /etc/secrets is read-only
-    and yt-dlp attempts to write updated session cookies back to the file."""
+    """Find valid cookie file from environment variables, Render Secret Files (/etc/secrets/),
+    or repository cookie folders. Copies to a writable location (/tmp) because Render secrets
+    are read-only and yt-dlp attempts to write updated session cookies back to the file."""
+    import base64
     import shutil
     import tempfile
 
     settings = get_settings()
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))
-    # Only use explicit secret files or env var; never default to stale repo cookie files
+
+    # 1. Check direct cookie string in env var (raw Netscape or base64 encoded)
+    raw_env_cookies = os.environ.get("YOUTUBE_COOKIES") or settings.youtube_cookies
+    if raw_env_cookies and raw_env_cookies.strip():
+        val = raw_env_cookies.strip()
+        decoded_text: str | None = None
+        # Try decoding if user base64 encoded the cookie file (recommended for cloud env vars)
+        try:
+            decoded_bytes = base64.b64decode(val, validate=True)
+            candidate = decoded_bytes.decode("utf-8", errors="ignore")
+            if "\t" in candidate:
+                decoded_text = candidate
+        except Exception:
+            pass
+
+        if decoded_text is None and "\t" in val:
+            decoded_text = val.replace("\\n", "\n").replace("\\t", "\t")
+
+        if decoded_text and "\t" in decoded_text:
+            if not decoded_text.startswith("# Netscape"):
+                decoded_text = f"# Netscape HTTP Cookie File\n{decoded_text}"
+            env_cookie_path = os.path.join(tempfile.gettempdir(), "yt_env_cookies.txt")
+            try:
+                with open(env_cookie_path, "w", encoding="utf-8") as f:
+                    f.write(decoded_text)
+                if _is_valid_netscape_cookies(env_cookie_path):
+                    logger.info("Using YouTube cookies resolved from YOUTUBE_COOKIES environment variable.")
+                    return env_cookie_path
+            except Exception as e:
+                logger.warning("Failed to write YOUTUBE_COOKIES env var to file: %s", e)
+
+    # 2. Check candidate file paths
     candidates = [
         "/etc/secrets/cookies.txt",
         "/etc/secrets/filtered_cookies.txt",
         os.environ.get("YOUTUBE_COOKIES_FILE"),
+        settings.yt_cookiefile,
+        os.path.join(base_dir, "cookies", "filtered_cookies.txt"),
+        os.path.join(base_dir, "cookies", "cookies.txt"),
+        os.path.join(base_dir, "cookies.txt"),
     ]
     seen: set[str] = set()
     for path in candidates:
@@ -70,24 +106,55 @@ def _resolve_cookiefile() -> str | None:
     return None
 
 
+def get_cookie_status() -> dict[str, Any]:
+    """Diagnostic helper for health endpoint to verify cookie presence on cloud instances."""
+    resolved = _resolve_cookiefile()
+    settings = get_settings()
+    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))
+    candidates = [
+        "/etc/secrets/cookies.txt",
+        "/etc/secrets/filtered_cookies.txt",
+        os.environ.get("YOUTUBE_COOKIES_FILE"),
+        settings.yt_cookiefile,
+        os.path.join(base_dir, "cookies", "filtered_cookies.txt"),
+    ]
+    checked = {}
+    for c in candidates:
+        if c:
+            checked[c] = os.path.isfile(c) and os.path.getsize(c) > 0
+    return {
+        "configured": resolved is not None,
+        "resolved_path": resolved,
+        "has_youtube_cookies_env": bool(os.environ.get("YOUTUBE_COOKIES") or settings.youtube_cookies),
+        "checked_files": checked,
+    }
+
 
 def _build_extractor_args(
     cookie_path: str | None,
     client_list: list[str] | None = None,
+    skip_webpage: bool = False,
 ) -> dict[str, Any]:
-    """Build yt-dlp extractor_args. visionos is always first because it bypasses
-    datacenter IP blocks (403/429) without cookies or JS runtimes."""
+    """Build yt-dlp extractor_args.
+    When skip_webpage is True, yt-dlp avoids requesting the watch webpage HTML,
+    bypassing YouTube's HTTP 429 datacenter IP rate limits on cloud hosts."""
     settings = get_settings()
 
     if client_list is not None:
         player_clients = client_list
+    elif cookie_path:
+        player_clients = ["web_embedded", "web", "mweb", "android"]
     else:
-        player_clients = ["visionos", "ios", "web_embedded", "mweb", "android"]
+        player_clients = ["android", "web_embedded", "visionos", "ios"]
+
+    yt_args: dict[str, Any] = {
+        "player_client": player_clients,
+    }
+    if skip_webpage:
+        yt_args["player_skip"] = ["webpage"]
 
     extractor_args: dict[str, Any] = {
-        "youtube": {
-            "player_client": player_clients
-        }
+        "youtube": yt_args
     }
 
     if settings.yt_pot_provider_url and "web" in player_clients:
@@ -132,24 +199,38 @@ def _extract_and_download(
 
 def download_youtube_audio(url: str) -> str:
     """Download a YouTube video's audio and return the path to the resulting WAV file.
-    Includes resilient multi-tier fallbacks using visionos, web_embedded, and android
-    clients to bypass bot detection, SABR format restrictions, and cookie expiration."""
+    Includes resilient multi-tier fallbacks using android (skipping webpage to bypass
+    datacenter IP 429), visionos, and web_embedded clients."""
     import yt_dlp
     settings = get_settings()
     os.makedirs(settings.download_dir, exist_ok=True)
 
     cookie_path = _resolve_cookiefile()
-    extractor_args = _build_extractor_args(cookie_path)
     output_path = os.path.join(settings.download_dir, "%(title)s.%(ext)s")
 
-    # Stage 1: Primary attempt with resolved cookies (if any) and modern visionos/web_embedded client priority
+    # If cookies are present, attempt cookie-authenticated download first.
+    # If no cookies, start directly with the datacenter-safe Android client skipping the watch webpage.
+    if cookie_path:
+        primary_clients = ["web_embedded", "web", "android"]
+        primary_skip_webpage = False
+        primary_format = "bestaudio/best"
+    else:
+        primary_clients = ["android", "web_embedded"]
+        primary_skip_webpage = True
+        primary_format = "bestaudio/18/best"
+
+    extractor_args = _build_extractor_args(cookie_path, client_list=primary_clients, skip_webpage=primary_skip_webpage)
     ydl_opts: dict[str, Any] = {
-        "format": "bestaudio/best",
+        "format": primary_format,
         "outtmpl": output_path,
         "postprocessors": [
             {"key": "FFmpegExtractAudio", "preferredcodec": "wav", "preferredquality": "192"}
         ],
         "extractor_args": extractor_args,
+        "http_headers": {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
+            "Accept-Language": "en-US,en;q=0.9",
+        },
         "quiet": False,
         "no_warnings": False,
     }
@@ -157,7 +238,7 @@ def download_youtube_audio(url: str) -> str:
         ydl_opts["cookiefile"] = cookie_path
         logger.info("Using YouTube cookies from %s", cookie_path)
     else:
-        logger.info("No YouTube cookies file found. Proceeding with visionos/web_embedded clients.")
+        logger.info("No cookies found. Proceeding with datacenter-safe Android client (skipping webpage 429).")
 
     try:
         filename = _extract_and_download(url, ydl_opts, settings.download_dir)
@@ -167,54 +248,73 @@ def download_youtube_audio(url: str) -> str:
         primary_err = str(exc)
         logger.warning("Primary yt-dlp download failed for url=%s: %s", url, primary_err)
 
-        # Stage 2: Clean fallback WITHOUT cookies using visionos and ios clients.
-        fb1_clients = ["visionos", "ios", "web_embedded"]
-        logger.info("Attempting Fallback 1 (clean clients %s without cookies)...", fb1_clients)
-        fallback_opts_clean: dict[str, Any] = {
-            "format": "bestaudio/best",
+        # Fallback 1: Direct Android client with webpage skipped and format 18 (bypasses 429 + 403)
+        logger.info("Attempting Fallback 1: Direct Android client skipping webpage...")
+        fb1_opts: dict[str, Any] = {
+            "format": "bestaudio/18/best",
             "outtmpl": output_path,
             "postprocessors": [
                 {"key": "FFmpegExtractAudio", "preferredcodec": "wav", "preferredquality": "192"}
             ],
-            "extractor_args": _build_extractor_args(None, client_list=fb1_clients),
+            "extractor_args": _build_extractor_args(None, client_list=["android"], skip_webpage=True),
             "quiet": False,
             "no_warnings": False,
         }
         fb1_err: str | None = None
         try:
-            filename = _extract_and_download(url, fallback_opts_clean, settings.download_dir)
+            filename = _extract_and_download(url, fb1_opts, settings.download_dir)
             logger.info("Fallback 1 succeeded for url=%s -> %s", url, filename)
             return filename
         except Exception as fb1_exc:
             fb1_err = str(fb1_exc)
             logger.warning("Fallback 1 failed: %s", fb1_exc)
 
-        # Stage 3: Universal format fallback with format 18 (360p progressive MP4 audio/video)
-        fb2_clients = ["visionos", "ios", "web_embedded", "android"]
-        logger.info("Attempting Fallback 2 (universal format fallback bestaudio/18/best with clients %s)...", fb2_clients)
-        fallback_opts_universal: dict[str, Any] = {
-            "format": "bestaudio/18/best",
+        # Fallback 2: VisionOS and Web Embedded clean clients
+        logger.info("Attempting Fallback 2: VisionOS and Web Embedded clean clients...")
+        fb2_opts: dict[str, Any] = {
+            "format": "bestaudio/best",
             "outtmpl": output_path,
             "postprocessors": [
                 {"key": "FFmpegExtractAudio", "preferredcodec": "wav", "preferredquality": "192"}
             ],
-            "extractor_args": _build_extractor_args(None, client_list=fb2_clients),
+            "extractor_args": _build_extractor_args(None, client_list=["visionos", "web_embedded", "ios"]),
             "quiet": False,
             "no_warnings": False,
         }
         fb2_err: str | None = None
         try:
-            filename = _extract_and_download(url, fallback_opts_universal, settings.download_dir)
+            filename = _extract_and_download(url, fb2_opts, settings.download_dir)
             logger.info("Fallback 2 succeeded for url=%s -> %s", url, filename)
             return filename
         except Exception as fb2_exc:
             fb2_err = str(fb2_exc)
-            logger.error("Fallback 2 also failed: %s", fb2_exc)
+            logger.warning("Fallback 2 failed: %s", fb2_exc)
+
+        # Fallback 3: Universal format 18 fallback
+        logger.info("Attempting Fallback 3: Universal fallback format 18 with Android/VisionOS...")
+        fb3_opts: dict[str, Any] = {
+            "format": "18/best",
+            "outtmpl": output_path,
+            "postprocessors": [
+                {"key": "FFmpegExtractAudio", "preferredcodec": "wav", "preferredquality": "192"}
+            ],
+            "extractor_args": _build_extractor_args(None, client_list=["android", "visionos"], skip_webpage=True),
+            "quiet": False,
+            "no_warnings": False,
+        }
+        fb3_err: str | None = None
+        try:
+            filename = _extract_and_download(url, fb3_opts, settings.download_dir)
+            logger.info("Fallback 3 succeeded for url=%s -> %s", url, filename)
+            return filename
+        except Exception as fb3_exc:
+            fb3_err = str(fb3_exc)
+            logger.error("Fallback 3 also failed: %s", fb3_exc)
 
         # If all fallbacks failed, raise a detailed error
         raise DownloadFailedError(
             f"YouTube download failed after multiple resilient attempts. "
-            f"Primary: {primary_err} | Fallback 1: {fb1_err} | Fallback 2: {fb2_err}"
+            f"Primary: {primary_err} | Fallback 1: {fb1_err} | Fallback 2: {fb2_err} | Fallback 3: {fb3_err}"
         ) from exc
     except Exception as exc:  # noqa: BLE001
         logger.exception("Unexpected error downloading url=%s: %s", url, exc)
@@ -224,14 +324,11 @@ def download_youtube_audio(url: str) -> str:
 def extract_video_title(url: str) -> str | None:
     """Best-effort title lookup without downloading, used to populate meeting.title early."""
     import yt_dlp
-    settings = get_settings()
     cookie_path = _resolve_cookiefile()
-    extractor_args = _build_extractor_args(cookie_path)
-
     ydl_opts: dict[str, Any] = {
         "quiet": True,
         "skip_download": True,
-        "extractor_args": extractor_args,
+        "extractor_args": _build_extractor_args(cookie_path, client_list=["android", "web_embedded", "visionos"], skip_webpage=True),
     }
     if cookie_path:
         ydl_opts["cookiefile"] = cookie_path
@@ -240,13 +337,11 @@ def extract_video_title(url: str) -> str | None:
             info = ydl.extract_info(url, download=False)
             return info.get("title")
     except Exception:
-        # Fallback without cookies
         try:
-            title_fallback_clients = ["visionos", "ios", "web_embedded"]
             fallback_opts: dict[str, Any] = {
                 "quiet": True,
                 "skip_download": True,
-                "extractor_args": _build_extractor_args(None, client_list=title_fallback_clients),
+                "extractor_args": _build_extractor_args(None, client_list=["android"], skip_webpage=True),
             }
             with yt_dlp.YoutubeDL(fallback_opts) as ydl:  # type: ignore[arg-type]
                 info = ydl.extract_info(url, download=False)
