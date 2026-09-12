@@ -42,18 +42,11 @@ def _resolve_cookiefile() -> str | None:
 
     settings = get_settings()
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.."))
+    # Only use explicit secret files or env var; never default to stale repo cookie files
     candidates = [
         "/etc/secrets/cookies.txt",
         "/etc/secrets/filtered_cookies.txt",
-        settings.yt_cookiefile,
-        os.path.join(base_dir, "cookies", "filtered_cookies.txt"),
-        os.path.join(base_dir, "cookies", "cookies.txt"),
-        os.path.join(base_dir, "cookies", "youtube.com_cookies.txt"),
-        os.path.join(base_dir, "cookies.txt"),
-        "cookies/filtered_cookies.txt",
-        "cookies/cookies.txt",
-        "cookies/youtube.com_cookies.txt",
-        "cookies.txt",
+        os.environ.get("YOUTUBE_COOKIES_FILE"),
     ]
     seen: set[str] = set()
     for path in candidates:
@@ -82,18 +75,14 @@ def _build_extractor_args(
     cookie_path: str | None,
     client_list: list[str] | None = None,
 ) -> dict[str, Any]:
-    """Build yt-dlp extractor_args."""
+    """Build yt-dlp extractor_args. visionos is always first because it bypasses
+    datacenter IP blocks (403/429) without cookies or JS runtimes."""
     settings = get_settings()
 
     if client_list is not None:
         player_clients = client_list
-    elif settings.yt_pot_provider_url:
-        # When POT provider is configured, prioritize web clients that utilize the PO token
-        player_clients = ["web", "web_embedded", "android", "visionos"]
-    elif cookie_path:
-        player_clients = ["visionos", "web_embedded", "android", "web"]
     else:
-        player_clients = ["visionos", "web_embedded", "android", "web"]
+        player_clients = ["visionos", "ios", "web_embedded", "mweb", "android"]
 
     extractor_args: dict[str, Any] = {
         "youtube": {
@@ -101,7 +90,7 @@ def _build_extractor_args(
         }
     }
 
-    if settings.yt_pot_provider_url:
+    if settings.yt_pot_provider_url and "web" in player_clients:
         extractor_args["youtubepot-bgutilhttp"] = {
             "base_url": [settings.yt_pot_provider_url]
         }
@@ -178,9 +167,8 @@ def download_youtube_audio(url: str) -> str:
         primary_err = str(exc)
         logger.warning("Primary yt-dlp download failed for url=%s: %s", url, primary_err)
 
-        # Stage 2: Fallback WITHOUT cookies using visionos/web_embedded or web/web_embedded clients.
-        # An invalid, expired, or rotated cookie file is often the exact trigger for YouTube bot blocks.
-        fb1_clients = ["web", "web_embedded"] if settings.yt_pot_provider_url else ["visionos", "web_embedded"]
+        # Stage 2: Clean fallback WITHOUT cookies using visionos and ios clients.
+        fb1_clients = ["visionos", "ios", "web_embedded"]
         logger.info("Attempting Fallback 1 (clean clients %s without cookies)...", fb1_clients)
         fallback_opts_clean: dict[str, Any] = {
             "format": "bestaudio/best",
@@ -202,7 +190,7 @@ def download_youtube_audio(url: str) -> str:
             logger.warning("Fallback 1 failed: %s", fb1_exc)
 
         # Stage 3: Universal format fallback with format 18 (360p progressive MP4 audio/video)
-        fb2_clients = ["web", "web_embedded", "android"] if settings.yt_pot_provider_url else ["visionos", "web_embedded", "android"]
+        fb2_clients = ["visionos", "ios", "web_embedded", "android"]
         logger.info("Attempting Fallback 2 (universal format fallback bestaudio/18/best with clients %s)...", fb2_clients)
         fallback_opts_universal: dict[str, Any] = {
             "format": "bestaudio/18/best",
@@ -254,7 +242,7 @@ def extract_video_title(url: str) -> str | None:
     except Exception:
         # Fallback without cookies
         try:
-            title_fallback_clients = ["web", "web_embedded"] if settings.yt_pot_provider_url else ["visionos", "web_embedded"]
+            title_fallback_clients = ["visionos", "ios", "web_embedded"]
             fallback_opts: dict[str, Any] = {
                 "quiet": True,
                 "skip_download": True,
