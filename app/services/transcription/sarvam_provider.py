@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import cast
+from typing import Any, cast
 
 import requests
 from pydub import AudioSegment
@@ -14,10 +14,12 @@ logger = logging.getLogger("meeting_assistant.transcription")
 class SarvamProvider:
     name = "sarvam"
 
-    def __init__(self):
+    def __init__(self, language: Any = "hinglish"):
         self.settings = get_settings()
         if not self.settings.sarvam_api_key:
             raise MissingApiKeyError("SARVAM_API_KEY is not configured on the server.")
+        lang_str = str(language.value if hasattr(language, "value") else language).lower()
+        self.language_code = "en-IN" if "english" in lang_str else "hi-IN"
 
     def _send_piece(self, piece_path: str) -> str:
         headers = {"api-subscription-key": self.settings.sarvam_api_key}
@@ -26,7 +28,7 @@ class SarvamProvider:
                 files = {"file": (os.path.basename(piece_path), f, "audio/wav")}
                 data = {
                     "model": self.settings.sarvam_stt_model,
-                    "language_code": "hi-IN",
+                    "language_code": self.language_code,
                     "with_diarization": "false",
                 }
                 response = requests.post(

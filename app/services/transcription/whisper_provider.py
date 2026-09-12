@@ -13,7 +13,12 @@ _model_lock = threading.Lock()  # whisper's model isn't guaranteed thread-safe u
 def _load_model():
     global _model
     if _model is None:
-        import whisper
+        try:
+            import whisper
+        except ImportError as exc:
+            raise TranscriptionFailedError(
+                "Local Whisper model is not installed. Please set SARVAM_API_KEY in Render environment."
+            ) from exc
         settings = get_settings()
         logger.info("Loading Whisper model: %s", settings.whisper_model)
         _model = whisper.load_model(settings.whisper_model)

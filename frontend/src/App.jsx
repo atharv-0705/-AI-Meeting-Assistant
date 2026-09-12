@@ -118,9 +118,10 @@ export default function App() {
   useEffect(() => {
     if (meeting?.status === "failed") {
       setPipelineStatus("idle");
-      setSubmitError(meeting?.error_message || "Processing failed. Please check your video URL or audio format.");
+      const errDetail = meeting?.error?.message || meeting?.error_message || "Processing failed.";
+      setSubmitError(errDetail);
     }
-  }, [meeting?.status, meeting?.error_message]);
+  }, [meeting?.status, meeting?.error, meeting?.error_message]);
 
   // Handle starting a new processing session from Hero
   const handleStartProcessing = useCallback(async ({ mode, url, file, language }) => {

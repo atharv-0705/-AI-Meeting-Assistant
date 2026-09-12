@@ -8,6 +8,6 @@ from app.services.transcription.whisper_provider import WhisperProvider
 def get_provider(language: Language) -> TranscriptionProvider:
     settings = get_settings()
     if settings.sarvam_api_key:
-        return SarvamProvider()
+        return SarvamProvider(language=language)
     return WhisperProvider()
 

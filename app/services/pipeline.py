@@ -79,12 +79,12 @@ def run_meeting_pipeline(meeting_id: str, source: str, language: Language) -> No
         logger.warning("Meeting %s failed at a known stage: %s", meeting_id, exc.code)
         meeting_store.update(meeting_id, status=MeetingStatus.FAILED, error_code=exc.code, error_message=exc.message)
     except Exception as exc:  # noqa: BLE001 - last-resort catch so the background task never dies silently
-        logger.exception("Meeting %s failed unexpectedly", meeting_id)
+        logger.exception("Meeting %s failed unexpectedly: %s", meeting_id, exc)
         meeting_store.update(
             meeting_id,
             status=MeetingStatus.FAILED,
             error_code="INTERNAL_ERROR",
-            error_message="An unexpected internal error occurred while processing this meeting.",
+            error_message=f"{type(exc).__name__}: {exc}" if str(exc) else f"Internal error ({type(exc).__name__})",
         )
     finally:
         # Clean up intermediate chunk files; keep the source wav for potential re-use/debugging.
