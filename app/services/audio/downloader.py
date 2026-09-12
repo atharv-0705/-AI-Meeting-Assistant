@@ -192,11 +192,13 @@ def download_youtube_audio(url: str) -> str:
             "quiet": False,
             "no_warnings": False,
         }
+        fb1_err: str | None = None
         try:
             filename = _extract_and_download(url, fallback_opts_clean, settings.download_dir)
             logger.info("Fallback 1 succeeded for url=%s -> %s", url, filename)
             return filename
         except Exception as fb1_exc:
+            fb1_err = str(fb1_exc)
             logger.warning("Fallback 1 failed: %s", fb1_exc)
 
         # Stage 3: Universal format fallback with format 18 (360p progressive MP4 audio/video)
@@ -212,17 +214,19 @@ def download_youtube_audio(url: str) -> str:
             "quiet": False,
             "no_warnings": False,
         }
+        fb2_err: str | None = None
         try:
             filename = _extract_and_download(url, fallback_opts_universal, settings.download_dir)
             logger.info("Fallback 2 succeeded for url=%s -> %s", url, filename)
             return filename
         except Exception as fb2_exc:
+            fb2_err = str(fb2_exc)
             logger.error("Fallback 2 also failed: %s", fb2_exc)
 
         # If all fallbacks failed, raise a detailed error
         raise DownloadFailedError(
             f"YouTube download failed after multiple resilient attempts. "
-            f"Primary: {primary_err} | Fallback: {fb2_exc}"
+            f"Primary: {primary_err} | Fallback 1: {fb1_err} | Fallback 2: {fb2_err}"
         ) from exc
     except Exception as exc:  # noqa: BLE001
         logger.exception("Unexpected error downloading url=%s: %s", url, exc)
